@@ -1,8 +1,8 @@
 ---
 
-# 2️⃣ Jamf entry doc: `docs/jamf/README.md`
+# 2️⃣ Jamf entry doc: `jamf/docs/README.md`
 
-📍 **Location:** `docs/jamf/README.md`
+📍 **Location:** `jamf/docs/README.md`
 
 ```markdown
 # Jamf Pro Integration – Backblaze RMM
