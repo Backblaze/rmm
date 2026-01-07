@@ -27,17 +27,14 @@ clear and easy to adapt.
 ---
 
 ## Repository Structure
-
-```text
 rmm/
 ├── README.md
-├── docs/
-│   └── jamf/
-│       ├── README.md
-│       ├── actions.md
-│       ├── extension-attributes.md
-│       └── optional-smart-groups.md
 └── jamf/
+    ├── docs/
+    │   ├── README.md
+    │   ├── actions.md
+    │   ├── extension-attributes.md
+    │   └── optional-smart-groups.md
     └── scripts/
         ├── actions/
         ├── configuration/
