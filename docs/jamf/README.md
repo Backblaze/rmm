@@ -37,3 +37,11 @@ jamf/
     ├── configuration/          # future configuration helpers
     ├── extension-attributes/   # optional reporting scripts
     └── install/                # installation helpers
+
+    ## Installation
+
+Backblaze Business v10 can be installed via Jamf using a dedicated install script.
+
+Script: jamf/scripts/install/install-backblaze-business-v10.sh
+This script is intended to be executed via a Jamf policy
+(scoped to devices where Backblaze is not yet installed).
