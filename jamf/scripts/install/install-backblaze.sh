@@ -1,131 +1,135 @@
 #!/bin/bash
-# Backblaze Business Install (Optimized for Jamf Pro) - v10 internal build
+# Backblaze Business Group Install (Jamf Pro) — UAT
 #
-# Jamf Pro Script Parameters:
-#   $4 = Backblaze Group ID
-#   $5 = Backblaze Group Token
-#   $6 = Backblaze Email
-#   $7 = Backblaze Region (optional)
+# Purpose:
+#   UAT-focused installer that enrolls/signs-in devices to a Backblaze Business Group.
+#   This script REQUIRES Group enrollment parameters.
 #
-# Local testing (optional): supports getopts
-#   -g <group_id> -t <group_token> -e <email> [-r <region>] [-u <dmg_url>]
+# Jamf Script Parameters:
+#   $4 = Backblaze Group ID            (required)
+#   $5 = Backblaze Group Auth Token    (required)
+#   $6 = Backblaze Email               (required)
+#   $7 = Backblaze Region              (optional)
+#   $8 = DMG URL override              (optional)
+#
+# Defaults:
+#   - Uses internal v10 DMG by default (UAT)
+#   - Installs or silently upgrades if already installed
+#   - Verifies bzserv is running (retry loop)
 #
 # Notes:
-# - Requires root (Jamf runs scripts as root).
-# - Uses internal v10 DMG URL by default.
-# - Verifies success by checking bzserv is running (with a retry loop).
-# - Logs to /var/log/backblaze_mdm_install.log
+# - Jamf runs scripts as root.
+# - Logs to stdout + /var/log/backblaze_mdm_install.log
+# - Does NOT print tokens.
 
 set -euo pipefail
 
 #############################################
-# DEFAULTS (can be overridden)
+# LOGGING
 #############################################
-BZ_GROUP_ID="${BZ_GROUP_ID:-""}"
-BZ_GROUP_TOKEN="${BZ_GROUP_TOKEN:-""}"
-BZ_EMAIL="${BZ_EMAIL:-""}"
-BZ_REGION="${BZ_REGION:-""}"
-
-BZ_DMG_URL_DEFAULT="https://f000.backblazeb2.com/file/b2-computer-backup-files/macos/downloader/bzdownloader-mac-10.0.0.1012.dmg"
-BZ_DMG_URL="${BZ_DMG_URL:-$BZ_DMG_URL_DEFAULT}"
-
-#############################################
-# JAMF PARAMETERS (preferred in Jamf)
-#############################################
-# $1 mountPoint, $2 computerName, $3 userName, $4+ custom
-if [[ "${4-}" != "" ]]; then BZ_GROUP_ID="$4"; fi
-if [[ "${5-}" != "" ]]; then BZ_GROUP_TOKEN="$5"; fi
-if [[ "${6-}" != "" ]]; then BZ_EMAIL="$6"; fi
-if [[ "${7-}" != "" ]]; then BZ_REGION="$7"; fi
-
-#############################################
-# LOCAL CLI OVERRIDES (optional)
-#############################################
-# If you run this locally and want flags, they override Jamf params/env.
-while getopts ":g:t:e:r:u:" opt; do
-  case "$opt" in
-    g) BZ_GROUP_ID="$OPTARG" ;;
-    t) BZ_GROUP_TOKEN="$OPTARG" ;;
-    e) BZ_EMAIL="$OPTARG" ;;
-    r) BZ_REGION="$OPTARG" ;;
-    u) BZ_DMG_URL="$OPTARG" ;;
-    \?) echo "Invalid option: -$OPTARG" >&2; exit 2 ;;
-    :)  echo "Option -$OPTARG requires an argument." >&2; exit 2 ;;
-  esac
-done
-
-#############################################
-# INTERNAL CONSTANTS
-#############################################
-BZ_DMG_PATH="/tmp/install_backblaze.dmg"
-BZ_MOUNT=""   # will be detected dynamically
-BZ_INSTALLER=""  # will be set after mount
 LOG_FILE="/var/log/backblaze_mdm_install.log"
-
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
-
-# Log to file + stdout
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-log "=== Backblaze Business install started ==="
+log "=== Backblaze Business Group install started (UAT) ==="
 
 #############################################
-# SAFETY & VALIDATION
+# REQUIRE ROOT
 #############################################
 if [[ "${EUID}" -ne 0 ]]; then
   log "ERROR: Script must run as root."
   exit 1
 fi
 
+#############################################
+# INPUTS
+#############################################
+BZ_GROUP_ID="${BZ_GROUP_ID:-""}"
+BZ_GROUP_TOKEN="${BZ_GROUP_TOKEN:-""}"
+BZ_EMAIL="${BZ_EMAIL:-""}"
+BZ_REGION="${BZ_REGION:-""}"
+
+# UAT default: internal v10 build DMG (can be overridden by $8)
+BZ_DMG_URL_DEFAULT="https://f000.backblazeb2.com/file/b2-computer-backup-files/macos/downloader/bzdownloader-mac-10.0.0.1012.dmg"
+BZ_DMG_URL="${BZ_DMG_URL:-$BZ_DMG_URL_DEFAULT}"
+
+#############################################
+# JAMF PARAMETERS OVERRIDE
+#############################################
+# Jamf passes: $1 mountPoint, $2 computerName, $3 userName, $4+ custom
+if [[ -n "${4-}" ]]; then BZ_GROUP_ID="$4"; fi
+if [[ -n "${5-}" ]]; then BZ_GROUP_TOKEN="$5"; fi
+if [[ -n "${6-}" ]]; then BZ_EMAIL="$6"; fi
+if [[ -n "${7-}" ]]; then BZ_REGION="$7"; fi
+if [[ -n "${8-}" ]]; then BZ_DMG_URL="$8"; fi
+
+#############################################
+# VALIDATION (UAT requires enrollment params)
+#############################################
 if [[ -z "$BZ_GROUP_ID" || -z "$BZ_GROUP_TOKEN" || -z "$BZ_EMAIL" ]]; then
-  log "ERROR: Missing required values."
-  log "  BZ_GROUP_ID='$BZ_GROUP_ID'"
-  log "  BZ_GROUP_TOKEN length=${#BZ_GROUP_TOKEN}"
-  log "  BZ_EMAIL='$BZ_EMAIL'"
-  log "Provide via Jamf params ($4-$6), env vars, or local flags (-g -t -e)."
+  log "ERROR: Missing required values for Business Group enrollment."
+  log "  BZ_GROUP_ID='${BZ_GROUP_ID}'"
+  log "  BZ_EMAIL='${BZ_EMAIL}'"
+  log "Provide via Jamf parameters $4-$6 (recommended) or env vars."
   exit 1
 fi
 
 #############################################
-# CLEANUP HANDLER
+# INTERNAL CONSTANTS
+#############################################
+BZ_DMG_PATH="/tmp/backblaze_installer.dmg"
+BZ_PLIST="/tmp/backblaze_hdiutil.plist"
+BZ_MOUNTPOINT=""
+BZ_INSTALLER_REL="Backblaze Installer.app/Contents/MacOS/bzinstall_mate"
+
+#############################################
+# CLEANUP
 #############################################
 cleanup() {
-  log "Running cleanup…"
-  if [[ -n "${BZ_MOUNT:-}" && -d "${BZ_MOUNT:-}" ]]; then
-    hdiutil detach "$BZ_MOUNT" >/dev/null 2>&1 || true
+  log "Cleanup…"
+  if [[ -n "${BZ_MOUNTPOINT}" && -d "${BZ_MOUNTPOINT}" ]]; then
+    /usr/sbin/diskutil unmount "${BZ_MOUNTPOINT}" >/dev/null 2>&1 || true
   fi
-  rm -f "$BZ_DMG_PATH" >/dev/null 2>&1 || true
+  rm -f "$BZ_DMG_PATH" "$BZ_PLIST" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
 
 #############################################
-# DOWNLOAD INSTALLER
+# DOWNLOAD DMG
 #############################################
-log "Downloading Backblaze installer DMG from: $BZ_DMG_URL"
-curl -fL --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 900 \
+log "Downloading installer DMG:"
+log "  URL: $BZ_DMG_URL"
+
+curl -fLsS --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 900 \
   "$BZ_DMG_URL" -o "$BZ_DMG_PATH"
 
 #############################################
-# MOUNT DMG (dynamic mount detection)
+# MOUNT DMG (robust mount point detection)
 #############################################
-log "Mounting installer DMG…"
-ATTACH_OUT="$(hdiutil attach -nobrowse -readonly "$BZ_DMG_PATH")"
-BZ_MOUNT="$(echo "$ATTACH_OUT" | awk -F'\t' '/\/Volumes\// {print $NF; exit}')"
+log "Mounting DMG…"
+hdiutil attach -nobrowse -plist "$BZ_DMG_PATH" > "$BZ_PLIST"
 
-if [[ -z "$BZ_MOUNT" || ! -d "$BZ_MOUNT" ]]; then
+# Extract mount-point from plist. Take first entry that has a mount-point.
+for i in $(/usr/libexec/PlistBuddy -c "Print :system-entities" "$BZ_PLIST" 2>/dev/null | awk '/Dict/ {print NR-1}' || true); do
+  mp=$(/usr/libexec/PlistBuddy -c "Print :system-entities:${i}:mount-point" "$BZ_PLIST" 2>/dev/null || true)
+  if [[ -n "$mp" && -d "$mp" ]]; then
+    BZ_MOUNTPOINT="$mp"
+    break
+  fi
+done
+
+if [[ -z "$BZ_MOUNTPOINT" ]]; then
   log "ERROR: Could not determine DMG mount point."
-  log "hdiutil output:"
-  echo "$ATTACH_OUT"
   exit 1
 fi
 
-BZ_INSTALLER="$BZ_MOUNT/Backblaze Installer.app/Contents/MacOS/bzinstall_mate"
-log "Mounted DMG at: $BZ_MOUNT"
+log "Mounted at: $BZ_MOUNTPOINT"
 
+BZ_INSTALLER="${BZ_MOUNTPOINT}/${BZ_INSTALLER_REL}"
 if [[ ! -x "$BZ_INSTALLER" ]]; then
-  log "ERROR: Backblaze installer not found or not executable at: $BZ_INSTALLER"
+  log "ERROR: Installer not found/executable at: $BZ_INSTALLER"
   log "Listing mount root for troubleshooting:"
-  ls -la "$BZ_MOUNT" || true
+  ls -la "$BZ_MOUNTPOINT" || true
   exit 1
 fi
 
@@ -133,8 +137,9 @@ fi
 # INSTALL OR UPGRADE
 #############################################
 rc=0
+
 if pgrep -x "bzserv" >/dev/null 2>&1; then
-  log "Backblaze already installed – performing silent upgrade…"
+  log "Backblaze already installed — performing silent upgrade…"
   set +e
   "$BZ_INSTALLER" --silentUpgrade
   rc=$?
@@ -167,7 +172,7 @@ fi
 # VERIFY SERVICE (retry loop)
 #############################################
 log "Waiting for Backblaze service 'bzserv' to start…"
-for i in {1..30}; do
+for _ in {1..30}; do
   if pgrep -x "bzserv" >/dev/null 2>&1; then
     log "bzserv is running."
     break
@@ -180,18 +185,6 @@ if ! pgrep -x "bzserv" >/dev/null 2>&1; then
   exit 1
 fi
 
-#############################################
-# OPTIONAL: LOG INSTALLED VERSION VIA bzcli
-#############################################
-if [[ -x "/usr/local/bin/bzcli" ]]; then
-  INSTALLED_VER="$(/usr/local/bin/bzcli report -v /backup/installation/version 2>/dev/null || true)"
-  INSTALLED_VER="${INSTALLED_VER#"${INSTALLED_VER%%[![:space:]]*}"}"
-  INSTALLED_VER="${INSTALLED_VER%"${INSTALLED_VER##*[![:space:]]}"}"
-  log "Installed Backblaze version (bzcli): ${INSTALLED_VER:-unknown}"
-else
-  log "Note: bzcli not found at /usr/local/bin/bzcli (may not be installed yet or path differs)."
-fi
-
 log "Backblaze client installed and running. Group ID: $BZ_GROUP_ID"
-log "=== Backblaze Business install completed successfully ==="
+log "=== Backblaze Business Group install completed successfully (UAT) ==="
 exit 0
