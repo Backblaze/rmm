@@ -15,13 +15,29 @@ log() {
 }
 
 find_bzcli() {
+  # Optional explicit override
+  if [[ -n "${BZCLI_PATH:-}" && -x "${BZCLI_PATH}" ]]; then
+    echo "${BZCLI_PATH}"
+    return 0
+  fi
+
+  # Canonical macOS Backblaze location
+  if [[ -x "/Applications/Backblaze.app/Contents/MacOS/bzcli" ]]; then
+    echo "/Applications/Backblaze.app/Contents/MacOS/bzcli"
+    return 0
+  fi
+
+  # PATH fallback
   if command -v bzcli >/dev/null 2>&1; then
     command -v bzcli
     return 0
   fi
-  for p in "/usr/local/bin/bzcli" "/opt/homebrew/bin/bzcli" "/usr/bin/bzcli" "/Library/Backblaze/bzcli"; do
+
+  # Minimal legacy fallbacks
+  for p in "/usr/local/bin/bzcli" "/opt/homebrew/bin/bzcli" "/usr/bin/bzcli"; do
     [[ -x "$p" ]] && { echo "$p"; return 0; }
   done
+
   return 1
 }
 
