@@ -1,7 +1,12 @@
-cat > jamf/scripts/extension-attributes/backblaze-status-summary.sh <<'EOF'
 #!/bin/bash
+# Jamf Extension Attribute: Backblaze – Status Summary
+# Reports current backup status (e.g. Running, Paused, Error)
+
 find_bzcli() {
-  if command -v bzcli >/dev/null 2>&1; then command -v bzcli; return 0; fi
+  if command -v bzcli >/dev/null 2>&1; then
+    command -v bzcli
+    return 0
+  fi
   for p in "/usr/local/bin/bzcli" "/opt/homebrew/bin/bzcli" "/usr/bin/bzcli" "/Library/Backblaze/bzcli"; do
     [[ -x "$p" ]] && { echo "$p"; return 0; }
   done
@@ -13,7 +18,5 @@ if ! BZCLI="$(find_bzcli)"; then
   exit 0
 fi
 
-VAL="$("$BZCLI" report -v /backup/status/summary 2>/dev/null | tr -d '\r')"
+VAL="$($BZCLI report -v /backup/status/summary 2>/dev/null | tr -d '\r')"
 echo "<result>${VAL:-Unknown}</result>"
-EOF
-chmod +x jamf/scripts/extension-attributes/backblaze-status-summary.sh
