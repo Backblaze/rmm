@@ -3,17 +3,17 @@
 These scripts map directly to `bzcli action` commands.
 
 ## Scripts
-- `generic/scripts/actions/backblaze-backup-now.sh`
-- `generic/scripts/actions/backblaze-pause-backup.sh`
-- `generic/scripts/actions/backblaze-resume-backup.sh`
+- `generic/scripts/actions/backup-now.sh`
+- `generic/scripts/actions/pause-backup.sh`
+- `generic/scripts/actions/resume-backup.sh`
 
 ## Usage
 Run as root (recommended):
 
 ```
-sudo bash generic/scripts/actions/backblaze-backup-now.sh
-sudo bash generic/scripts/actions/backblaze-pause-backup.sh
-sudo bash generic/scripts/actions/backblaze-resume-backup.sh
+sudo bash generic/scripts/actions/backup-now.sh
+sudo bash generic/scripts/actions/pause-backup.sh
+sudo bash generic/scripts/actions/resume-backup.sh
 ```
 
 ## Notes
