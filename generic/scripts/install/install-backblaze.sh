@@ -79,7 +79,7 @@ fi
 # Parse the mount point from the last column of the last output line.
 # Example output line (last column is mount point):
 # /dev/disk4s1  Apple_HFS  Backblaze Installer  /Volumes/Backblaze Installer
-MOUNT_POINT="$(echo "$HDI_OUT" | awk 'END{print $NF}')"
+MOUNT_POINT="$(echo "$HDI_OUT" | /usr/bin/sed -n 's|.*\(/Volumes/.*\)$|\1|p' | /usr/bin/tail -n 1)"
 
 if [[ -z "$MOUNT_POINT" || ! -d "$MOUNT_POINT" ]]; then
   log "ERROR: failed to mount DMG."
