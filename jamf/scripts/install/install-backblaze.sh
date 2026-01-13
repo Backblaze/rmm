@@ -88,7 +88,7 @@ BZ_INSTALLER_REL="Backblaze Installer.app/Contents/MacOS/bzinstall_mate"
 cleanup() {
   log "Cleanup…"
   if [[ -n "${BZ_MOUNTPOINT}" && -d "${BZ_MOUNTPOINT}" ]]; then
-    /usr/sbin/diskutil unmount "${BZ_MOUNTPOINT}" >/dev/null 2>&1 || true
+    /usr/sbin/diskutil unmount force "${BZ_MOUNTPOINT}" >/dev/null 2>&1 || true
   fi
   rm -f "$BZ_DMG_PATH" "$BZ_PLIST" >/dev/null 2>&1 || true
 }
@@ -109,14 +109,25 @@ curl -fLsS --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 900 \
 log "Mounting DMG…"
 hdiutil attach -nobrowse -plist "$BZ_DMG_PATH" > "$BZ_PLIST"
 
-# Extract mount-point from plist. Take first entry that has a mount-point.
-for i in $(/usr/libexec/PlistBuddy -c "Print :system-entities" "$BZ_PLIST" 2>/dev/null | awk '/Dict/ {print NR-1}' || true); do
-  mp=$(/usr/libexec/PlistBuddy -c "Print :system-entities:${i}:mount-point" "$BZ_PLIST" 2>/dev/null || true)
-  if [[ -n "$mp" && -d "$mp" ]]; then
-    BZ_MOUNTPOINT="$mp"
-    break
-  fi
-done
+# Extract mount-point(s) from plist. PlistBuddy prints lines like:
+#   mount-point = /Volumes/Backblaze Installer
+# Grab all mount points, then pick the first existing directory.
+MOUNT_POINTS="$(/usr/libexec/PlistBuddy -c "Print :system-entities" "$BZ_PLIST" 2>/dev/null | awk -F'= ' '/mount-point =/ {print $2}')"
+
+if [[ -n "$MOUNT_POINTS" ]]; then
+  while IFS= read -r mp; do
+    if [[ -n "$mp" && -d "$mp" ]]; then
+      BZ_MOUNTPOINT="$mp"
+      break
+    fi
+  done <<< "$MOUNT_POINTS"
+fi
+
+# Fallback (some macOS versions / errors): parse hdiutil attach stdout.
+if [[ -z "$BZ_MOUNTPOINT" ]]; then
+  ATTACH_OUT="$(hdiutil attach -nobrowse "$BZ_DMG_PATH" 2>/dev/null || true)"
+  BZ_MOUNTPOINT="$(echo "$ATTACH_OUT" | awk '/\/Volumes\// {print $NF; exit}')"
+fi
 
 if [[ -z "$BZ_MOUNTPOINT" ]]; then
   log "ERROR: Could not determine DMG mount point."
@@ -141,9 +152,21 @@ rc=0
 if pgrep -x "bzserv" >/dev/null 2>&1; then
   log "Backblaze already installed — performing silent upgrade…"
   set +e
-  "$BZ_INSTALLER" --silentUpgrade
+  UPGRADE_OUT="$("$BZ_INSTALLER" --silentUpgrade 2>&1)"
   rc=$?
   set -e
+
+  # Always log installer output for troubleshooting (may include benign version comparisons).
+  if [[ -n "$UPGRADE_OUT" ]]; then
+    echo "$UPGRADE_OUT" | tee -a "$LOG_FILE" >/dev/null
+  fi
+
+  # UAT safeguard: treat "installed version is newer than the installer" as a no-op success.
+  # This can happen when testing a newer client against an older/incorrectly-versioned DMG.
+  if [[ $rc -ne 0 ]] && echo "$UPGRADE_OUT" | grep -qi "installed version" && echo "$UPGRADE_OUT" | grep -qi "newer than the installer version"; then
+    log "WARN: Installed client appears newer than the installer DMG; treating as no-op success."
+    rc=0
+  fi
 else
   log "Fresh Backblaze Business Group install for $BZ_EMAIL…"
 
