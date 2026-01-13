@@ -107,10 +107,24 @@ fi
 # If Backblaze already installed, do a silent upgrade
 if pgrep -x "bzserv" >/dev/null 2>&1; then
   log "Backblaze already installed; running silent upgrade..."
+
+  # Capture output so we can detect benign version-mismatch cases.
   set +e
-  "$INSTALLER" --silentUpgrade >>"$LOG_FILE" 2>&1
+  UPGRADE_OUT="$($INSTALLER --silentUpgrade 2>&1)"
   RC=$?
   set -e
+
+  if [[ -n "$UPGRADE_OUT" ]]; then
+    echo "$UPGRADE_OUT" | tee -a "$LOG_FILE" >/dev/null
+  fi
+
+  # UAT safeguard: treat "installed version is newer than the installer version" as a no-op success.
+  # This can happen when testing a newer client against an older/incorrectly-versioned DMG.
+  if [[ $RC -ne 0 ]] && echo "$UPGRADE_OUT" | grep -qi "installed version" && echo "$UPGRADE_OUT" | grep -qi "newer than the installer version"; then
+    log "WARN: Installed client appears newer than installer DMG; treating as no-op success."
+    RC=0
+  fi
+
   log "Upgrade exit code: $RC"
   exit "$RC"
 fi
