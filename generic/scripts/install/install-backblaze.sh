@@ -31,9 +31,14 @@ log() {
 
 cleanup() {
   if [[ -n "${MOUNT_POINT:-}" ]]; then
-    hdiutil detach "$MOUNT_POINT" -quiet >/dev/null 2>&1 || true
+    # diskutil is generally more reliable for DMG volume unmounts
+    diskutil unmount "$MOUNT_POINT" >/dev/null 2>&1 || true
   fi
-  rm -f "$DMG_PATH" >/dev/null 2>&1 || true
+  if [[ "${KEEP_DMG:-0}" != "1" ]]; then
+    rm -f "$DMG_PATH" >/dev/null 2>&1 || true
+  else
+    log "KEEP_DMG=1 set; leaving DMG at $DMG_PATH"
+  fi
 }
 trap cleanup EXIT
 
@@ -56,13 +61,42 @@ log "Downloading DMG: $BZ_DMG_URL"
 curl -fsSL "$BZ_DMG_URL" -o "$DMG_PATH"
 
 log "Mounting DMG..."
-# Capture mount point reliably
-MOUNT_POINT="$(hdiutil attach -nobrowse -quiet "$DMG_PATH" | awk 'END{print $3}')"
+
+# Attach the DMG and capture output so mount errors are visible in logs.
+set +e
+HDI_OUT="$(hdiutil attach -nobrowse "$DMG_PATH" 2>&1)"
+HDI_RC=$?
+set -e
+
+# Always log hdiutil output for troubleshooting.
+echo "$HDI_OUT" | tee -a "$LOG_FILE" >/dev/null
+
+if [[ $HDI_RC -ne 0 ]]; then
+  log "ERROR: hdiutil attach failed (rc=$HDI_RC)."
+  exit 3
+fi
+
+# Parse the mount point from the last column of the last output line.
+# Example output line (last column is mount point):
+# /dev/disk4s1  Apple_HFS  Backblaze Installer  /Volumes/Backblaze Installer
+MOUNT_POINT="$(echo "$HDI_OUT" | awk 'END{print $NF}')"
+
 if [[ -z "$MOUNT_POINT" || ! -d "$MOUNT_POINT" ]]; then
   log "ERROR: failed to mount DMG."
+  log "ERROR: mount point parse failed; got MOUNT_POINT='$MOUNT_POINT'"
   exit 3
 fi
 log "Mounted at: $MOUNT_POINT"
+
+# Some DMGs may mount with a slightly different volume name; ensure we can locate the app.
+if [[ ! -d "$MOUNT_POINT/Backblaze Installer.app" ]]; then
+  # Try to find the installer app within the mount.
+  FOUND_APP="$(/usr/bin/find "$MOUNT_POINT" -maxdepth 2 -name 'Backblaze Installer.app' -type d 2>/dev/null | head -n 1 || true)"
+  if [[ -n "$FOUND_APP" ]]; then
+    MOUNT_POINT="$(/usr/bin/dirname "$FOUND_APP")"
+    log "Adjusted mount point to: $MOUNT_POINT"
+  fi
+fi
 
 INSTALLER="$MOUNT_POINT/Backblaze Installer.app/Contents/MacOS/bzinstall_mate"
 if [[ ! -x "$INSTALLER" ]]; then
