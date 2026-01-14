@@ -20,12 +20,13 @@ Each platform implementation is **self‑contained** to keep scripts and documen
 
 ## Supported Platforms
 
-| Platform     | Status |
-|--------------|--------|
-| **Jamf Pro** | UAT / In Progress |
-| Kandji       | Planned |
-| Addigy       | Planned |
-| JumpCloud    | Planned |
+| Platform           | Status           |
+|--------------------|------------------|
+| **Jamf Pro**       | UAT / In Progress |
+| Kandji             | Planned          |
+| Addigy             | Planned          |
+| JumpCloud          | Planned          |
+| Generic (non‑RMM)  | Available        |
 
 > ⚠️ Jamf Pro is currently in **UAT**. Scripts and documentation may change before general availability.
 
@@ -36,17 +37,28 @@ Each platform implementation is **self‑contained** to keep scripts and documen
 ```text
 rmm/
 ├── README.md
-└── jamf/
+├── jamf/
+│   ├── docs/
+│   │   ├── README.md
+│   │   ├── actions.md
+│   │   ├── extension-attributes.md
+│   │   └── optional-smart-groups.md
+│   └── scripts/
+│       ├── actions/
+│       ├── configuration/
+│       ├── extension-attributes/
+│       └── install/
+└── generic/
+    ├── README.md
     ├── docs/
     │   ├── README.md
     │   ├── actions.md
-    │   ├── extension-attributes.md
-    │   └── optional-smart-groups.md
+    │   ├── install.md
+    │   └── reporting.md
     └── scripts/
         ├── actions/
-        ├── configuration/
-        ├── extension-attributes/
-        └── install/
+        ├── install/
+        └── reporting/
 ```
 
 ### Platform layout philosophy
@@ -63,6 +75,10 @@ rmm/
 If you are using **Jamf Pro**, start here:
 
 - `jamf/docs/README.md`
+
+If you are not using a supported RMM platform, start with the **Generic integration**:
+
+- `generic/README.md`
 
 That document explains:
 
