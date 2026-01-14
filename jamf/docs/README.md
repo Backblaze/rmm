@@ -1,145 +1,62 @@
-#!/bin/bash
-# Backblaze (bzcli) reporting: Host GUID (HGUID)
-# Output: plain text (client-friendly)
+# Jamf Pro Integration – Backblaze (UAT)
 
-set -euo pipefail
+This folder contains Jamf Pro–specific scripts and documentation for integrating **Backblaze Computer Backup** using `bzcli`.
 
-BZCLI_CANONICAL="/Applications/Backblaze.app/Contents/MacOS/bzcli"
-
-find_bzcli() {
-  if [[ -x "$BZCLI_CANONICAL" ]]; then
-    echo "$BZCLI_CANONICAL"; return 0
-  fi
-  if command -v bzcli >/dev/null 2>&1; then
-    command -v bzcli; return 0
-  fi
-  for p in \
-    "/usr/local/bin/bzcli" \
-    "/opt/homebrew/bin/bzcli" \
-    "/usr/bin/bzcli" \
-    "/Library/Backblaze/bzcli"; do
-    [[ -x "$p" ]] && { echo "$p"; return 0; }
-  done
-  return 1
-}
-
-strip_quotes() {
-  # trims leading/trailing whitespace and optional surrounding quotes
-  sed -E 's/^[[:space:]]*"?//; s/"?[[:space:]]*$//'
-}
-
-if ! BZCLI="$(find_bzcli)"; then
-  echo "bzcli not found"
-  exit 0
-fi
-
-VAL="$($BZCLI report -v /backup/installation/hguid 2>/dev/null | tr -d '\r' | strip_quotes)"
-echo "${VAL:-Unknown}"#!/bin/bash
-# Backblaze (bzcli) reporting: Status Summary
-# Output: plain text (client-friendly)
-
-set -euo pipefail
-
-BZCLI_CANONICAL="/Applications/Backblaze.app/Contents/MacOS/bzcli"
-
-find_bzcli() {
-  if [[ -x "$BZCLI_CANONICAL" ]]; then
-    echo "$BZCLI_CANONICAL"; return 0
-  fi
-  if command -v bzcli >/dev/null 2>&1; then
-    command -v bzcli; return 0
-  fi
-  for p in \
-    "/usr/local/bin/bzcli" \
-    "/opt/homebrew/bin/bzcli" \
-    "/usr/bin/bzcli" \
-    "/Library/Backblaze/bzcli"; do
-    [[ -x "$p" ]] && { echo "$p"; return 0; }
-  done
-  return 1
-}
-
-strip_quotes() {
-  # trims leading/trailing whitespace and optional surrounding quotes
-  sed -E 's/^[[:space:]]*"?//; s/"?[[:space:]]*$//'
-}
-
-if ! BZCLI="$(find_bzcli)"; then
-  echo "bzcli not found"
-  exit 0
-fi
-
-VAL="$($BZCLI report -v /backup/status/summary 2>/dev/null | tr -d '\r' | strip_quotes)"
-echo "${VAL:-Unknown}"# Generic Backblaze Integration
-
-This repository contains scripts and documentation for integrating Backblaze Computer Backup in a generic manner.
-
-## Repository Structure
-
-```text
-generic/
-├── README.md
-├── docs/
-│   ├── README.md
-│   ├── actions.md
-│   ├── install.md
-│   └── reporting.md
-└── scripts/
-    ├── actions/
-    │   ├── backup-now.sh
-    │   ├── pause-backup.sh
-    │   └── resume-backup.sh
-    ├── install/
-    │   └── install-backblaze.sh
-    └── reporting/
-        ├── client-version.sh
-        ├── installed.sh
-        ├── status-summary.sh
-        ├── last-backup-iso8601.sh
-        └── hguid.sh
-```
-
-## Documentation
-
-Start here: `generic/docs/README.md`
-
-- Actions: `generic/docs/actions.md`
-- Install: `generic/docs/install.md`
-- Reporting: `generic/docs/reporting.md`# Generic Backblaze Integration
-
-This repository contains scripts and documentation for integrating Backblaze Computer Backup in a generic manner.
+This implementation was created for **Jamf Pro UAT / sandbox validation** and can be adapted for customer deployments.
 
 ---
 
-## Repository layout (Generic)
+## Repository layout (Jamf)
 
 ```text
-generic/
-├── README.md
+jamf/
 ├── docs/
 │   ├── README.md
 │   ├── actions.md
-│   ├── install.md
-│   └── reporting.md
+│   ├── extension-attributes.md
+│   └── optional-smart-groups.md
 └── scripts/
     ├── actions/
-    │   ├── backup-now.sh
-    │   ├── pause-backup.sh
-    │   └── resume-backup.sh
-    ├── install/
-    │   └── install-backblaze.sh
-    └── reporting/
-        ├── client-version.sh
-        ├── installed.sh
-        ├── status-summary.sh
-        ├── last-backup-iso8601.sh
-        └── hguid.sh
+    ├── configuration/
+    ├── extension-attributes/
+    └── install/
 ```
 
 ---
 
 ## Documentation
 
-- Actions: `actions.md`
-- Install: `install.md`
-- Reporting: `reporting.md`
+- **Actions** (backup now / pause / resume): `actions.md`
+- **Extension Attributes** (inventory/reporting in Jamf): `extension-attributes.md`
+- **Smart Computer Groups** (optional examples): `optional-smart-groups.md`
+
+---
+
+## Scripts
+
+### Install
+
+- `scripts/install/install-backblaze.sh`
+
+Installs (or upgrades) Backblaze Computer Backup and can enroll a device into a Business Group using Jamf script parameters.
+
+### Actions (bzcli)
+
+- `scripts/actions/backup-now.sh`
+- `scripts/actions/pause-backup.sh`
+- `scripts/actions/resume-backup.sh`
+
+### Extension Attributes (Reporting)
+
+- `scripts/extension-attributes/backblaze-client-version.sh`
+- `scripts/extension-attributes/backblaze-installed.sh`
+- `scripts/extension-attributes/backblaze-status-summary.sh`
+- `scripts/extension-attributes/backblaze-last-backup-iso8601.sh`
+- `scripts/extension-attributes/backblaze-hguid.sh`
+
+---
+
+## Notes
+
+- Smart Computer Groups are optional; core functionality works without them.
+- Validate in UAT first, then adapt defaults (installer URL/version, scoping, and parameters) for production.
