@@ -12,5 +12,5 @@ if [[ ! -x "$BZCLI" ]]; then
   fi
 fi
 
-VAL="$("$BZCLI" report -v /backup/status/summary 2>/dev/null | tr -d '\r')"
+VAL="$("$BZCLI" report -v /backup/status/summary 2>/dev/null | tr -d '\r' | sed -E 's/^[[:space:]]*\"?//; s/\"?[[:space:]]*$//')"
 echo "${VAL:-Unknown}"
