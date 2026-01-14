@@ -1,8 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-BZCLI="/Applications/Backblaze.app/Contents/MacOS/bzcli"
-if [[ -n "${BZCLI_PATH:-}" ]]; then BZCLI="$BZCLI_PATH"; fi
+# Canonical macOS bzcli path
+BZCLI_DEFAULT="/Applications/Backblaze.app/Contents/MacOS/bzcli"
+BZCLI="${BZCLI_PATH:-$BZCLI_DEFAULT}"
+
+# Fall back to PATH if canonical path is missing
 if [[ ! -x "$BZCLI" ]]; then
   if command -v bzcli >/dev/null 2>&1; then
     BZCLI="$(command -v bzcli)"
@@ -12,5 +15,8 @@ if [[ ! -x "$BZCLI" ]]; then
   fi
 fi
 
-VAL="$("$BZCLI" report -v /backup/status/summary 2>/dev/null | tr -d '\r' | sed -E 's/^[[:space:]]*\"?//; s/\"?[[:space:]]*$//')"
+VAL="$("$BZCLI" report -v /backup/status/summary 2>/dev/null \
+  | tr -d '\r' \
+  | sed -E 's/^[[:space:]]*\"?//; s/\"?[[:space:]]*$//')"
+
 echo "${VAL:-Unknown}"
