@@ -152,7 +152,7 @@ rc=0
 if pgrep -x "bzserv" >/dev/null 2>&1; then
   log "Backblaze already installed — performing silent upgrade…"
   set +e
-  UPGRADE_OUT="$($BZ_INSTALLER -silentUpgrade 2>&1)"
+  UPGRADE_OUT="$("$BZ_INSTALLER" --silentUpgrade 2>&1)"
   rc=$?
   set -e
 
@@ -168,10 +168,9 @@ if pgrep -x "bzserv" >/dev/null 2>&1; then
     rc=0
   fi
 else
-  log "Fresh Backblaze Business Group install for ${BZ_EMAIL}..."
-  log "Starting fresh install (Business Group enrollment)."
+  log "Fresh Backblaze Business Group install for $BZ_EMAIL…"
 
-  INSTALL_ARGS=(-createaccount_or_signinaccount
+  INSTALL_ARGS=(--createaccount_or_signinaccount
                 -emailAddress "$BZ_EMAIL"
                 -groupId "$BZ_GROUP_ID"
                 -groupAuthToken "$BZ_GROUP_TOKEN")
@@ -209,6 +208,6 @@ if ! pgrep -x "bzserv" >/dev/null 2>&1; then
   exit 1
 fi
 
-log "Backblaze client installed and running. Group ID: ${BZ_GROUP_ID}"
+log "Backblaze client installed and running. Group ID: $BZ_GROUP_ID"
 log "=== Backblaze Business Group install completed successfully (UAT) ==="
 exit 0
