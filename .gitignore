@@ -1,2 +1,31 @@
+# macOS
 .DS_Store
-.DS_Store
+.AppleDouble
+.LSOverride
+
+# macOS Finder metadata
+._*
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Temporary files
+*.swp
+*.tmp
+*.bak
+
+# Logs
+*.log
+
+# Jamf / local testing artifacts
+/tmp/
+/private/tmp/
+
+# Shell
+.zsh_history
+.bash_history
+
+# Python (por si alguien prueba scripts)
+__pycache__/
+*.pyc.DS_Store
