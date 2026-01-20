@@ -11,6 +11,7 @@
 #   $6 = Backblaze Email               (required)
 #   $7 = Backblaze Region              (optional)
 #   $8 = DMG URL override              (optional)
+#   $9 = Start backup after install  (optional; 1/true/yes to enable)
 #
 # Defaults:
 #   - Uses internal v10 DMG by default (UAT)
@@ -48,6 +49,7 @@ BZ_GROUP_ID="${BZ_GROUP_ID:-""}"
 BZ_GROUP_TOKEN="${BZ_GROUP_TOKEN:-""}"
 BZ_EMAIL="${BZ_EMAIL:-""}"
 BZ_REGION="${BZ_REGION:-""}"
+BZ_START_BACKUP="${BZ_START_BACKUP:-""}"
 
 # UAT default: internal v10 build DMG (can be overridden by $8)
 BZ_DMG_URL_DEFAULT="https://f000.backblazeb2.com/file/b2-computer-backup-files/macos/computerbackup/bzinstall-mac-10.0.0.1016.dmg"
@@ -62,6 +64,7 @@ if [[ -n "${5-}" ]]; then BZ_GROUP_TOKEN="$5"; fi
 if [[ -n "${6-}" ]]; then BZ_EMAIL="$6"; fi
 if [[ -n "${7-}" ]]; then BZ_REGION="$7"; fi
 if [[ -n "${8-}" ]]; then BZ_DMG_URL="$8"; fi
+if [[ -n "${9-}" ]]; then BZ_START_BACKUP="$9"; fi
 
 #############################################
 # VALIDATION (UAT requires enrollment params)
@@ -107,7 +110,25 @@ curl -fLsS --retry 3 --retry-delay 2 --connect-timeout 20 --max-time 900 \
 # MOUNT DMG (robust mount point detection)
 #############################################
 log "Mounting DMG…"
-hdiutil attach -nobrowse -plist "$BZ_DMG_PATH" > "$BZ_PLIST"
+
+# NOTE: With `set -e`, a failing `hdiutil attach` can exit before Jamf captures useful output.
+# Capture stdout/stderr and log it on failure.
+set +e
+ATTACH_PLIST_OUT="$(hdiutil attach -nobrowse -plist "$BZ_DMG_PATH" 2>&1)"
+HDIUTIL_RC=$?
+set -e
+
+if [[ $HDIUTIL_RC -ne 0 ]]; then
+  log "ERROR: hdiutil attach failed (rc=${HDIUTIL_RC})."
+  log "ERROR: hdiutil output:"
+  echo "$ATTACH_PLIST_OUT"
+  log "ERROR: DMG details (ls -lh):"
+  ls -lh "$BZ_DMG_PATH" || true
+  exit 1
+fi
+
+# Persist the returned plist to disk for parsing below.
+printf '%s\n' "$ATTACH_PLIST_OUT" > "$BZ_PLIST"
 
 # Extract mount-point(s) from plist. PlistBuddy prints lines like:
 #   mount-point = /Volumes/Backblaze Installer
@@ -123,14 +144,14 @@ if [[ -n "$MOUNT_POINTS" ]]; then
   done <<< "$MOUNT_POINTS"
 fi
 
-# Fallback (some macOS versions / errors): parse hdiutil attach stdout.
+ # Fallback: if we still can't find a mount point, dump what we parsed for troubleshooting.
+# Do NOT call hdiutil attach again (that can create duplicate mounts like "Backblaze Installer 3").
 if [[ -z "$BZ_MOUNTPOINT" ]]; then
-  ATTACH_OUT="$(hdiutil attach -nobrowse "$BZ_DMG_PATH" 2>/dev/null || true)"
-  BZ_MOUNTPOINT="$(echo "$ATTACH_OUT" | awk '/\/Volumes\// {print $NF; exit}')"
-fi
-
-if [[ -z "$BZ_MOUNTPOINT" ]]; then
-  log "ERROR: Could not determine DMG mount point."
+  log "ERROR: mount point parse failed; got no valid /Volumes path from hdiutil plist output."
+  log "DEBUG: Parsed mount-points (raw):"
+  echo "$MOUNT_POINTS" || true
+  log "DEBUG: First 60 lines of returned plist (if present):"
+  sed -n '1,60p' "$BZ_PLIST" 2>/dev/null || true
   exit 1
 fi
 
@@ -206,6 +227,57 @@ done
 if ! pgrep -x "bzserv" >/dev/null 2>&1; then
   log "ERROR: Backblaze service 'bzserv' is not running after install."
   exit 1
+fi
+
+#############################################
+# OPTIONAL: START/RESUME BACKUP (best-effort)
+#############################################
+# We cannot programmatically grant macOS privacy permissions (FDA, Location, etc.) here.
+# Jamf configuration profiles (PPPC + ServiceManagement) should be scoped separately.
+# This section is best-effort and will not fail the install if the CLI command is unsupported.
+
+normalize_bool() {
+  # macOS ships Bash 3.2 by default; it does NOT support ${var,,} lowercase expansion.
+  # Use `tr` to normalize to lowercase instead.
+  local v
+  v="$(printf '%s' "${1:-}" | tr '[:upper:]' '[:lower:]')"
+  case "$v" in
+    1|true|yes|y|on) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+BZTRANSMIT="/Library/Backblaze.bzpkg/bztransmit"
+
+if normalize_bool "${BZ_START_BACKUP:-}"; then
+  log "Start-backup requested (BZ_START_BACKUP=${BZ_START_BACKUP})."
+
+  if [[ -x "$BZTRANSMIT" ]]; then
+    # Determine which flags are supported by this client.
+    HELP_OUT="$("$BZTRANSMIT" -help 2>&1 || true)"
+
+    run_if_supported() {
+      local flag="$1"
+      if echo "$HELP_OUT" | grep -q "${flag}"; then
+        log "Attempting: bztransmit ${flag}"
+        "${BZTRANSMIT}" "${flag}" >/dev/null 2>&1 || true
+        return 0
+      fi
+      return 1
+    }
+
+    # Most common: resume/unpause.
+    run_if_supported "-resume" || run_if_supported "-unpause" || true
+
+    # If the client supports an explicit backup trigger, try it.
+    run_if_supported "-backupnow" || run_if_supported "-startbackup" || true
+
+    log "Start-backup step completed (best-effort)."
+  else
+    log "WARN: bztransmit not found/executable at $BZTRANSMIT; skipping start-backup step."
+  fi
+else
+  log "Start-backup not requested (set Jamf $9 or env BZ_START_BACKUP=1 to enable)."
 fi
 
 log "Backblaze client installed and running. Group ID: $BZ_GROUP_ID"
