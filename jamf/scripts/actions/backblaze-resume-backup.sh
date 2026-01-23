@@ -11,7 +11,9 @@ set -euo pipefail
 LOG="/var/log/backblaze_bzcli_action.log"
 
 log() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [resume-backup] $*" | tee -a "$LOG"
+  local msg="[$(date '+%Y-%m-%d %H:%M:%S')] [resume-backup] $*"
+  # Write to log file and stderr (keep stdout clean for command output capture)
+  echo "$msg" | tee -a "$LOG" >&2
 }
 
 find_bzcli() {
@@ -41,6 +43,36 @@ find_bzcli() {
   return 1
 }
 
+get_console_user() {
+  # Return the current GUI console user (empty if none)
+  local u
+  u="$(stat -f%Su /dev/console 2>/dev/null || true)"
+  # Filter out system pseudo-users
+  if [[ -z "$u" || "$u" == "root" || "$u" == "_mbsetupuser" || "$u" == "loginwindow" ]]; then
+    echo ""
+  else
+    echo "$u"
+  fi
+}
+
+run_bzcli() {
+  # Run bzcli as the console user when available (needed for some actions like resume/pause)
+  local console_user uid
+  console_user="$(get_console_user)"
+
+  if [[ -n "$console_user" ]]; then
+    uid="$(id -u "$console_user" 2>/dev/null || true)"
+    if [[ -n "$uid" ]]; then
+      log "Running bzcli as console user '$console_user' (uid=$uid)"
+      /bin/launchctl asuser "$uid" /usr/bin/sudo -u "$console_user" "$BZCLI" "$@"
+      return $?
+    fi
+  fi
+
+  log "Running bzcli as root (no valid console user detected)"
+  "$BZCLI" "$@"
+}
+
 log "=== START ==="
 
 if [[ ${EUID} -ne 0 ]]; then
@@ -63,21 +95,29 @@ fi
 
 log "Using bzcli: $BZCLI"
 
-PRE_STATUS="$($BZCLI report -v /backup/status/summary 2>/dev/null | tr -d '\r' || echo unknown)"
+PRE_STATUS="$(run_bzcli report -v /backup/status/summary 2>/dev/null | tr -d '\r' || echo unknown)"
 log "Status BEFORE: ${PRE_STATUS:-unknown}"
 
 set +e
-"$BZCLI" action --resume-backup >>"$LOG" 2>&1
+# This bzcli build does not support --resume-backup. "Resume" is effectively achieved by starting a backup.
+# If the client is paused, --backup-now transitions it back into an active backup.
+run_bzcli action --backup-now >>"$LOG" 2>&1
 RC=$?
 set -e
 
-POST_STATUS="$($BZCLI report -v /backup/status/summary 2>/dev/null | tr -d '\r' || echo unknown)"
+# Show last lines in Jamf policy output for quick debugging
+# IMPORTANT: Do NOT append the tail back into the same log file (it causes duplicated/recursive log lines).
+log "bzcli action output (tail):"
+/usr/bin/tail -n 25 "$LOG" >&2
+
+POST_STATUS="$(run_bzcli report -v /backup/status/summary 2>/dev/null | tr -d '\r' || echo unknown)"
 log "Status AFTER: ${POST_STATUS:-unknown}"
 
 if [[ $RC -eq 0 ]]; then
-  log "SUCCESS: resume-backup command executed."
+  log "SUCCESS: resume requested (via --backup-now)."
 else
-  log "ERROR: resume-backup failed with exit code $RC."
+  log "ERROR: resume request failed (via --backup-now) with exit code $RC."
+  log "Next steps: check $LOG for the full bzcli output; verify Backblaze is signed in and bzserv is running."
 fi
 
 log "=== END (rc=$RC) ==="
