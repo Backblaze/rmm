@@ -1,0 +1,87 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		F3B23CAF2F29657C00F7D32F /* jamf */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = jamf;
+			sourceTree = "<group>";
+		};
+		F3B23CC22F2965B200F7D32F /* generic */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = generic;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXGroup section */
+		F3B23C632F2961DB00F7D32F = {
+			isa = PBXGroup;
+			children = (
+				F3B23CC22F2965B200F7D32F /* generic */,
+				F3B23CAF2F29657C00F7D32F /* jamf */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		F3B23C642F2961DB00F7D32F /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastUpgradeCheck = 2620;
+			};
+			buildConfigurationList = F3B23C672F2961DB00F7D32F /* Build configuration list for PBXProject "jamf-xcode" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = F3B23C632F2961DB00F7D32F;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		F3B23C682F2961DB00F7D32F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEVELOPMENT_TEAM = G4K4BQ7S8J;
+			};
+			name = Debug;
+		};
+		F3B23C692F2961DB00F7D32F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEVELOPMENT_TEAM = G4K4BQ7S8J;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F3B23C672F2961DB00F7D32F /* Build configuration list for PBXProject "jamf-xcode" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F3B23C682F2961DB00F7D32F /* Debug */,
+				F3B23C692F2961DB00F7D32F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F3B23C642F2961DB00F7D32F /* Project object */;
+}
