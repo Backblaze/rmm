@@ -20,12 +20,13 @@ Each platform implementation is **self‑contained** to keep scripts and documen
 
 ## Supported Platforms
 
-| Platform     | Status |
-|--------------|--------|
-| **Jamf Pro** | UAT / In Progress |
-| Kandji       | Planned |
-| Addigy       | Planned |
-| JumpCloud    | Planned |
+| Platform           | Status           |
+|--------------------|------------------|
+| **Jamf Pro**       | UAT / In Progress |
+| Kandji             | Planned          |
+| Addigy             | Planned          |
+| JumpCloud          | Planned          |
+| Generic (non‑RMM)  | Available        |
 
 > ⚠️ Jamf Pro is currently in **UAT**. Scripts and documentation may change before general availability.
 
@@ -36,17 +37,28 @@ Each platform implementation is **self‑contained** to keep scripts and documen
 ```text
 rmm/
 ├── README.md
-└── jamf/
+├── jamf/
+│   ├── docs/
+│   │   ├── README.md
+│   │   ├── actions.md
+│   │   ├── extension-attributes.md
+│   │   └── optional-smart-groups.md
+│   └── scripts/
+│       ├── actions/
+│       ├── configuration/
+│       ├── extension-attributes/
+│       └── install/
+└── generic/
+    ├── README.md
     ├── docs/
     │   ├── README.md
     │   ├── actions.md
-    │   ├── extension-attributes.md
-    │   └── optional-smart-groups.md
+    │   ├── install.md
+    │   └── reporting.md
     └── scripts/
         ├── actions/
-        ├── configuration/
-        ├── extension-attributes/
-        └── install/
+        ├── install/
+        └── reporting/
 ```
 
 ### Platform layout philosophy
@@ -64,6 +76,10 @@ If you are using **Jamf Pro**, start here:
 
 - `jamf/docs/README.md`
 
+If you are not using a supported RMM platform, start with the **Generic integration**:
+
+- `generic/README.md`
+
 That document explains:
 
 - How to deploy the installer script
@@ -78,3 +94,30 @@ That document explains:
 - This repository is intended as a **reference implementation**.
 - Administrators should review and adapt scripts to meet their internal security and operational requirements.
 - Customer‑facing defaults will be finalized after UAT.
+
+## Known Apple Platform Limitations
+
+The following behaviors are enforced by macOS and **cannot be bypassed by Jamf Pro, PPPC profiles, or any MDM solution**.
+
+### Location Services (Backblaze / bzbmenu)
+
+Backblaze features such as **Locate My Computer** rely on macOS Location Services.
+
+Apple enforces a **two‑layer permission model**:
+
+1. **Global Location Services toggle**
+   - Must be enabled manually by the end user.
+   - Cannot be enabled silently via MDM.
+
+2. **Per‑application authorization (PPPC / TCC)**
+   - Can be pre‑approved via configuration profiles.
+   - Persists across reboots, updates, and device wipes once granted.
+
+Because Backblaze uses multiple signed binaries (for example `Backblaze` and `bzbmenu`), **each binary appears separately** in Location Services and must be enabled once by the user.
+
+After this one‑time approval:
+- No additional prompts occur
+- Permissions persist automatically
+- Behavior remains consistent after reboot or reinstall
+
+This is expected macOS behavior and does not indicate a deployment issue.

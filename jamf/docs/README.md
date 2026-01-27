@@ -1,22 +1,8 @@
 # Jamf Pro Integration – Backblaze (UAT)
 
-This document describes how to integrate **Backblaze Computer Backup** with **Jamf Pro** using the scripts and documentation provided in this repository.
+This folder contains Jamf Pro–specific scripts and documentation for integrating **Backblaze Computer Backup** using `bzcli`.
 
-The Jamf integration is currently validated in a **Jamf Pro UAT / sandbox environment** and is intended as a reference implementation for internal testing prior to customer-facing release.
-
----
-
-## Scope
-
-The Jamf integration supports the following capabilities:
-
-- Installation and upgrade of Backblaze Computer Backup
-- Enrollment into a Backblaze Business Group (UAT)
-- Operational actions using `bzcli`
-- Optional reporting via Extension Attributes
-- Optional automation via Smart Computer Groups
-
-All components are **modular** and may be adopted independently.
+This implementation was created for **Jamf Pro UAT / sandbox validation** and can be adapted for customer deployments.
 
 ---
 
@@ -38,60 +24,39 @@ jamf/
 
 ---
 
-## Installation
+## Documentation
 
-Backblaze Business (v10 – UAT) can be installed via Jamf using a dedicated installer script.
-
-**Installer script:**
-```
-jamf/scripts/install/install-backblaze.sh
-```
-
-The installer script is intended to be executed via a Jamf Policy scoped to devices where Backblaze is not yet installed.
-
-During UAT, the installer:
-- Requires Business Group enrollment parameters
-- Uses an internal Backblaze v10 installer by default
+- **Actions** (backup now / pause / resume): `actions.md`
+- **Extension Attributes** (inventory/reporting in Jamf): `extension-attributes.md`
+- **Smart Computer Groups** (optional examples): `optional-smart-groups.md`
 
 ---
 
-## Actions (bzcli)
+## Scripts
 
-Operational actions are implemented using `bzcli` and executed through Jamf Policies.
+### Install
 
-Available actions include:
-- Trigger backup now
-- Pause backups
-- Resume backups
+- `scripts/install/install-backblaze.sh`
 
-See **`actions.md`** for details.
+Installs (or upgrades) Backblaze Computer Backup and can enroll a device into a Business Group using Jamf script parameters.
 
----
+### Actions (bzcli)
 
-## Extension Attributes (optional)
+- `scripts/actions/backup-now.sh`
+- `scripts/actions/pause-backup.sh`
+- `scripts/actions/resume-backup.sh`
 
-Optional Extension Attributes provide inventory visibility and reporting within Jamf Pro, including:
-- Backblaze client version
-- Installation state
-- Backup status summary
-- Last successful backup timestamp
-- Backblaze Host GUID (HGUID)
+### Extension Attributes (Reporting)
 
-See **`extension-attributes.md`** for details.
-
----
-
-## Smart Computer Groups (optional)
-
-Example Smart Computer Groups are provided to demonstrate scoping and automation during UAT.
-
-These groups are **not required** for baseline deployments.
-
-See **`optional-smart-groups.md`** for details.
+- `scripts/extension-attributes/backblaze-client-version.sh`
+- `scripts/extension-attributes/backblaze-installed.sh`
+- `scripts/extension-attributes/backblaze-status-summary.sh`
+- `scripts/extension-attributes/backblaze-last-backup-iso8601.sh`
+- `scripts/extension-attributes/backblaze-hguid.sh`
 
 ---
 
 ## Notes
 
-- All scripts should be reviewed and adapted to local Jamf standards before deployment.
-- Customer-ready defaults and documentation will be finalized after UAT completion.
+- Smart Computer Groups are optional; core functionality works without them.
+- Validate in UAT first, then adapt defaults (installer URL/version, scoping, and parameters) for production.

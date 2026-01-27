@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PayloadDisplayName</key>
+  <string>Backblaze - Location Services PPPC</string>
+
+  <key>PayloadIdentifier</key>
+  <string>com.yourorg.pppc.backblaze.location</string>
+
+  <key>PayloadOrganization</key>
+  <string>YourOrg</string>
+
+  <key>PayloadDescription</key>
+  <string>Allows Backblaze (bzbmenu) to access Location Services for Locate My Computer.</string>
+
+  <key>PayloadRemovalDisallowed</key>
+  <false/>
+
+  <key>PayloadScope</key>
+  <string>System</string>
+
+  <key>PayloadType</key>
+  <string>Configuration</string>
+
+  <key>PayloadUUID</key>
+  <string>C649AD83-E40E-46DE-B2E5-1FD807ABB792</string>
+
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+
+  <key>PayloadContent</key>
+  <array>
+    <dict>
+      <key>PayloadType</key>
+      <string>com.apple.TCC.configuration-profile-policy</string>
+
+      <key>PayloadVersion</key>
+      <integer>1</integer>
+
+      <key>PayloadIdentifier</key>
+      <string>com.yourorg.pppc.backblaze.location.tcc</string>
+
+      <key>PayloadUUID</key>
+      <string>22188FC0-8B1A-4E85-BE1F-B27A1112F6CF</string>
+
+      <key>PayloadDisplayName</key>
+      <string>Privacy Preferences Policy Control</string>
+
+      <key>Services</key>
+      <dict>
+        <!-- Location Services -->
+        <key>Location</key>
+        <array>
+          <dict>
+            <key>Identifier</key>
+            <string>com.backblaze.bzbmenu</string>
+
+            <key>IdentifierType</key>
+            <string>bundleID</string>
+
+            <!-- CodeRequirement: usa el que YA obtuviste con codesign -dr - -->
+            <key>CodeRequirement</key>
+            <string>identifier "com.backblaze.bzbmenu" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exists */ and certificate leaf[field.1.2.840.113635.100.6.1.13] /* exists */ and certificate leaf[subject.OU] = G4K4BQ7S8J</string>
+
+            <!-- Allow = 1 -->
+            <key>Allowed</key>
+            <integer>1</integer>
+          </dict>
+        </array>
+      </dict>
+
+    </dict>
+  </array>
+</dict>
+</plist>
