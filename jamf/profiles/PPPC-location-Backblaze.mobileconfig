@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PayloadContent</key>
+  <array>
+    <dict>
+      <key>PayloadType</key>
+      <string>com.apple.TCC.configuration-profile-policy</string>
+      <key>PayloadVersion</key>
+      <integer>1</integer>
+      <key>PayloadIdentifier</key>
+      <string>com.backblaze.pppc.backblaze</string>
+      <key>PayloadUUID</key>
+      <string>F2B2C7A1-6A3B-4F1E-9B7A-0C2A3A7B9A11</string>
+      <key>PayloadDisplayName</key>
+      <string>PPPC - Backblaze</string>
+
+      <key>Services</key>
+      <dict>
+
+        <!-- Full Disk Access -->
+        <key>SystemPolicyAllFiles</key>
+        <array>
+          <dict>
+            <key>Identifier</key>
+            <string>com.backblaze.backblaze</string>
+            <key>IdentifierType</key>
+            <string>bundleID</string>
+            <key>Allowed</key>
+            <true/>
+          </dict>
+          <dict>
+            <key>Identifier</key>
+            <string>com.backblaze.bzbmenu</string>
+            <key>IdentifierType</key>
+            <string>bundleID</string>
+            <key>Allowed</key>
+            <true/>
+          </dict>
+        </array>
+
+        <!-- Location Services (ABM / Supervised Macs) -->
+        <key>SystemPolicyLocationServices</key>
+        <array>
+          <dict>
+            <key>Identifier</key>
+            <string>com.backblaze.backblaze</string>
+            <key>IdentifierType</key>
+            <string>bundleID</string>
+            <key>Allowed</key>
+            <true/>
+          </dict>
+          <dict>
+            <key>Identifier</key>
+            <string>com.backblaze.bzbmenu</string>
+            <key>IdentifierType</key>
+            <string>bundleID</string>
+            <key>Allowed</key>
+            <true/>
+          </dict>
+        </array>
+
+        <!-- AppleEvents / Automation -->
+        <key>AppleEvents</key>
+        <array>
+          <dict>
+            <key>Identifier</key>
+            <string>com.backblaze.backblaze</string>
+            <key>IdentifierType</key>
+            <string>bundleID</string>
+            <key>Allowed</key>
+            <true/>
+            <key>AEReceiverIdentifier</key>
+            <string>com.apple.systemevents</string>
+            <key>AEReceiverIdentifierType</key>
+            <string>bundleID</string>
+          </dict>
+
+          <dict>
+            <key>Identifier</key>
+            <string>com.backblaze.bzbmenu</string>
+            <key>IdentifierType</key>
+            <string>bundleID</string>
+            <key>Allowed</key>
+            <true/>
+            <key>AEReceiverIdentifier</key>
+            <string>com.apple.systemevents</string>
+            <key>AEReceiverIdentifierType</key>
+            <string>bundleID</string>
+          </dict>
+        </array>
+
+      </dict>
+    </dict>
+  </array>
+
+  <key>PayloadType</key>
+  <string>Configuration</string>
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+  <key>PayloadIdentifier</key>
+  <string>com.backblaze.profile.pppc</string>
+  <key>PayloadUUID</key>
+  <string>9A3C5E2B-2D07-4D6A-9D4E-6E9F7B2C0C77</string>
+  <key>PayloadDisplayName</key>
+  <string>PPPC - Backblaze</string>
+</dict>
+</plist>
