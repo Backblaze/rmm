@@ -3,7 +3,7 @@
 This repository contains **platform-specific integration scripts and documentation** to enable **Backblaze Computer Backup** automation through popular **RMM / MDM platforms**.
 
 
-The goal is to provide IT administrators and MSPs with clear, copy‑paste‑ready building blocks that can be adapted to their environment.
+This repository provides production-ready reference implementations for enterprise-scale automation of Backblaze Computer Backup across RMM platforms.
 
 ## Intended Audience
 
@@ -27,6 +27,31 @@ Depending on the platform, integrations may include:
 - Examples for automation and remediation workflows
 
 Each platform implementation is **self‑contained** to keep scripts and documentation easy to understand and reuse.
+
+---
+
+
+## Integration Model
+
+This repository follows a layered automation model:
+
+1. **Deployment Layer**  
+   Silent installation and Business Group enrollment.
+
+2. **Telemetry Layer**  
+   Backup state reporting via `bzcli`.
+
+3. **Segmentation Layer**  
+   Dynamic device grouping within the RMM platform.
+
+4. **Operational Layer**  
+   Remote backup control using `bzcli` actions.
+
+5. **Compliance Layer (Optional)**  
+   Deterministic health classification and remediation workflows.
+
+Jamf Pro is provided as a reference RMM implementation.  
+The Generic integration exposes platform-neutral primitives that can be reused across other RMM environments.
 
 ---
 

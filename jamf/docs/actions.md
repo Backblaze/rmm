@@ -1,8 +1,8 @@
-# Jamf Pro – Backblaze Integration (UAT)
+# Jamf Pro – Backblaze Integration
 
-This documentation describes how to integrate **Backblaze Computer Backup** with **Jamf Pro** using scripts and configuration provided in this repository.
+This document describes how to integrate **Backblaze Computer Backup** with **Jamf Pro** using the reference scripts and configuration provided in this repository.
 
-This Jamf implementation is currently in **UAT** and intended for internal testing and validation before customer-facing release.
+This Jamf implementation serves as the reference RMM model for enterprise deployment, telemetry, and operational control.
 
 ---
 
@@ -12,7 +12,7 @@ The Jamf integration is modular. You may deploy only what you need.
 
 - **Installer**
   - Install or upgrade Backblaze
-  - Enroll devices into a Backblaze Business Group (UAT)
+  - Enroll devices into a Backblaze Business Group
 
 - **Actions (bzcli)**
   - Trigger backup now
@@ -27,7 +27,7 @@ The Jamf integration is modular. You may deploy only what you need.
   - Backblaze Host GUID (HGUID)
 
 - **Smart Groups (optional)**
-  - Examples for scoping and automation during UAT
+  - Examples for scoping and automation workflows
 
 ---
 
@@ -49,7 +49,7 @@ jamf/
 
 ---
 
-## How to start (UAT)
+## Getting Started
 
 1. Review the installer documentation
    - `jamf/scripts/install/install-backblaze.sh`
@@ -60,7 +60,7 @@ jamf/
 3. (Optional) Add Extension Attributes for reporting
    - `jamf/scripts/extension-attributes/`
 
-4. (Optional) Use Smart Groups during UAT
+4. (Optional) Use Smart Groups for staged or phased rollouts
    - See `optional-smart-groups.md`
 
 ---
@@ -68,7 +68,7 @@ jamf/
 ## Notes
 
 - All scripts are intended to be reviewed and adapted to local Jamf standards.
-- Customer-ready defaults will be finalized after UAT completes.
+- Defaults and examples may be adapted to align with organizational security and deployment standards.
 
 # Jamf Actions – Backblaze (bzcli)
 

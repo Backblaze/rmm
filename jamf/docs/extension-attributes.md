@@ -20,7 +20,17 @@ They can be safely omitted if Jamf inventory reporting is not required.
 
 ## Implemented Extension Attributes (Jamf Pro)
 
-The following Extension Attributes are provided and validated in Jamf Pro UAT.
+## Extension Attribute Design Model
+
+The Extension Attributes follow a structured reporting model aligned with the overall Jamf integration architecture:
+
+1. **Installation State** – Detects presence of the Backblaze client.
+2. **Version Reporting** – Exposes installed client version for compliance checks.
+3. **Operational Status** – Reports backup runtime state.
+4. **Telemetry Timestamping** – Exposes last successful backup time.
+5. **Device Identity** – Provides Host GUID (HGUID) for cross-reference.
+
+Together, these attributes enable deterministic device segmentation, automated remediation workflows, and enterprise-level reporting.
 
 ---
 
@@ -106,6 +116,33 @@ Reports the Backblaze Host GUID (HGUID) used to uniquely identify the device in 
 
 ---
 
+### (Optional) Backblaze – Health Classification
+
+**Script (if implemented):**
+```
+jamf/scripts/extension-attributes/backblaze-health-classification.sh
+```
+
+**Description:**
+Provides a deterministic health classification derived from backup status and last successful backup timestamp.
+
+This attribute is optional but recommended for enterprise compliance enforcement.
+
+**Example values:**
+- `Healthy`
+- `Warning`
+- `Critical`
+- `Not Installed`
+
+**Typical evaluation model (example):**
+- Healthy → Backup running and last backup < 24 hours
+- Warning → Backup paused or last backup 1–7 days
+- Critical → Last backup > 7 days or error state
+
+This classification can be used to drive Smart Group scoping and automated remediation policies.
+
+---
+
 ## Jamf Pro configuration notes
 
 - Each Extension Attribute should be created as a **Script** type
@@ -120,3 +157,6 @@ Reports the Backblaze Host GUID (HGUID) used to uniquely identify the device in 
 - All Extension Attributes rely on `bzcli` being present on the device
 - If `bzcli` is not found, the EA returns a safe fallback value
 - These EAs are designed to be lightweight and safe to run frequently
+- Health classification logic should remain deterministic and documented.
+- Thresholds (24h / 7d / etc.) may be adapted to organizational compliance requirements.
+- Extension Attributes are designed for reporting and segmentation only; they do not modify device state.
