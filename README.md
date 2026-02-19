@@ -2,7 +2,19 @@
 
 This repository contains **platform-specific integration scripts and documentation** to enable **Backblaze Computer Backup** automation through popular **RMM / MDM platforms**.
 
+
 The goal is to provide IT administrators and MSPs with clear, copy‑paste‑ready building blocks that can be adapted to their environment.
+
+## Intended Audience
+
+This repository is designed for:
+
+- Enterprise IT administrators
+- Jamf Pro administrators
+- Managed Service Providers (MSPs)
+- RMM automation engineers
+
+It provides structured, production-ready reference implementations for deploying, monitoring, and managing Backblaze Computer Backup at scale.
 
 ## What this repo provides
 
@@ -22,13 +34,11 @@ Each platform implementation is **self‑contained** to keep scripts and documen
 
 | Platform           | Status           |
 |--------------------|------------------|
-| **Jamf Pro**       | UAT / In Progress |
+| **Jamf Pro**       | Available (Reference Implementation) |
 | Kandji             | Planned          |
 | Addigy             | Planned          |
 | JumpCloud          | Planned          |
 | Generic (non‑RMM)  | Available        |
-
-> ⚠️ Jamf Pro is currently in **UAT**. Scripts and documentation may change before general availability.
 
 ---
 
@@ -85,7 +95,7 @@ That document explains:
 - How to deploy the installer script
 - How to configure optional `bzcli` actions
 - How to add Extension Attributes (optional)
-- How to use Smart Groups during UAT (optional)
+- How to use Smart Groups for staged or phased rollouts (optional)
 
 ---
 
@@ -93,7 +103,7 @@ That document explains:
 
 - This repository is intended as a **reference implementation**.
 - Administrators should review and adapt scripts to meet their internal security and operational requirements.
-- Customer‑facing defaults will be finalized after UAT.
+- Defaults and examples are provided as guidance and may be adapted to align with organizational standards.
 
 ## Known Apple Platform Limitations
 

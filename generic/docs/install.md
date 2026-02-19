@@ -1,15 +1,12 @@
-# Install (Generic)
+# Install (Generic – Reference Implementation)
 
-This page describes how to install (or upgrade) **Backblaze Computer Backup** on macOS using the **generic installer script** in this repository.
+This document describes how to install or upgrade **Backblaze Computer Backup** on macOS using the generic installer script provided in this repository.
 
-The generic installer is intended for:
-- Manual IT admin use (Terminal)
-- RMM tools that can run shell scripts
-- Automation workflows outside Jamf/Kandji/Addigy
-
-The script supports both:
-- **Backblaze Business Group enrollment** (Group ID / Group Token / Email)
-- **DMG URL override** for UAT/testing builds
+This implementation is designed as a platform-neutral reference model and is suitable for:
+- Enterprise IT administrators
+- Managed Service Providers (MSPs)
+- Custom RMM platforms
+- Shell-based automation and orchestration workflows
 
 ---
 
@@ -90,16 +87,16 @@ sudo bash generic/scripts/install/install-backblaze.sh \
 
 ---
 
-## Install from a DMG URL (UAT / testing)
+## Install from a Custom DMG URL (Non‑Production / Version Pinning)
 
-By default, the script uses the standard Business Group installer DMG.
-For UAT/testing builds, override the DMG URL.
+By default, the script uses the standard Business Group installer DMG.  
+For version pinning, staged rollouts, or non-production validation, override the DMG URL.
 
 Example (Backblaze v10 UAT build):
 
 ```bash
 sudo \
-  BZ_DMG_URL="https://f000.backblazeb2.com/file/b2-computer-backup-files/macos/computerbackup/bzinstall-mac-10.0.0.1016.dmg" \
+  BZ_DMG_URL="https://example.com/path/to/backblaze-installer.dmg" \
   BZ_GROUP_ID="<group_id>" \
   BZ_GROUP_TOKEN="<group_token>" \
   BZ_EMAIL="user@example.com" \
@@ -110,7 +107,7 @@ Or using flags:
 
 ```bash
 sudo bash generic/scripts/install/install-backblaze.sh \
-  -u "https://f000.backblazeb2.com/file/b2-computer-backup-files/macos/computerbackup/bzinstall-mac-10.0.0.1016.dmg" \
+  -u "https://example.com/path/to/backblaze-installer.dmg" \
   -g "<group_id>" \
   -t "<group_token>" \
   -e "user@example.com"
@@ -139,3 +136,18 @@ If Backblaze Desktop Client v10+ is installed, you can validate via `bzcli`:
 - The script performs an **upgrade** if Backblaze is already installed.
 - For production/customer deployments, use the default DMG URL unless a specific version is required.
 - For platform-specific guidance (Jamf Pro), refer to the Jamf documentation under `jamf/docs/`.
+
+---
+
+## Security Considerations
+
+- Group Tokens should be treated as sensitive credentials.
+- Avoid hardcoding tokens in publicly shared scripts.
+- Prefer secure variable injection via RMM secret storage or environment management systems.
+- Ensure installer execution is restricted to trusted automation workflows.
+
+---
+
+## Support Model
+
+This installer script is provided as a reference implementation. Organizations may adapt logging, validation, version control, and compliance logic to align with internal security and deployment standards.

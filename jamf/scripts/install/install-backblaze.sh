@@ -52,7 +52,7 @@ BZ_REGION="${BZ_REGION:-""}"
 BZ_START_BACKUP="${BZ_START_BACKUP:-""}"
 
 # UAT default: internal v10 build DMG (can be overridden by $8)
-BZ_DMG_URL_DEFAULT="https://f000.backblazeb2.com/file/b2-computer-backup-files/macos/computerbackup/bzinstall-mac-10.0.0.1016.dmg"
+BZ_DMG_URL_DEFAULT="https://f000.backblazeb2.com/file/b2-computer-backup-files/macos/downloader/bzdownloader-mac-10.0.0.1028.dmg"
 BZ_DMG_URL="${BZ_DMG_URL:-$BZ_DMG_URL_DEFAULT}"
 
 #############################################

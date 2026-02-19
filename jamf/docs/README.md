@@ -1,8 +1,19 @@
-# Jamf Pro Integration – Backblaze (UAT)
+# Jamf Pro Integration – Backblaze
 
 This folder contains Jamf Pro–specific scripts and documentation for integrating **Backblaze Computer Backup** using `bzcli`.
 
-This implementation was created for **Jamf Pro UAT / sandbox validation** and can be adapted for customer deployments.
+This reference implementation demonstrates enterprise-scale deployment, monitoring, and operational automation using Jamf-native constructs. It can be adapted to fit specific customer environments and policy requirements.
+
+## Intended Audience
+
+This integration is designed for:
+
+- Enterprise IT administrators
+- Jamf Pro administrators
+- Managed Service Providers (MSPs)
+- RMM automation engineers
+
+It provides structured, production-ready building blocks for deploying and managing Backblaze Computer Backup at scale.
 
 ---
 

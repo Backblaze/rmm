@@ -1,12 +1,63 @@
 #!/bin/bash
 # Backblaze Health Score – V1 (Jamf Extension Attribute)
-# Returns: Healthy | Warning | Critical | Not Installed
+# Output values (deterministic precedence):
+#   Not Installed  -> bzcli binary not present
+#   Critical       -> paused/error/waiting states OR no/invalid last backup OR stale backup >= 7 days
+#   Warning        -> last backup between 24 hours and < 7 days
+#   Healthy        -> last backup <= 24 hours AND status indicates active/backing up
+#
+# Notes:
+# - Jamf EAs run as root; bzcli may require a GUI user context on some systems.
+# - This EA is intentionally conservative: unknown/unexpected states default to Critical.
 
-set -euo pipefail
+set -u
+set -o pipefail
 
 BZCLI="/Applications/Backblaze.app/Contents/MacOS/bzcli"
 
 result() { echo "<result>$1</result>"; exit 0; }
+
+# Thresholds
+WARN_AFTER_HOURS=24
+CRIT_AFTER_HOURS=$((24 * 7))
+
+trim() {
+  # trim leading/trailing whitespace
+  local s="$1"
+  s="${s#${s%%[![:space:]]*}}"
+  s="${s%${s##*[![:space:]]}}"
+  printf '%s' "$s"
+}
+
+lower() {
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+# Parse common ISO8601 formats to epoch seconds (macOS date)
+# Accepts: 2026-02-19T11:55:00Z, 2026-02-19T11:55:00+00:00, 2026-02-19T11:55:00.123Z
+iso8601_to_epoch() {
+  local iso="$1" norm
+  norm="$(trim "$iso")"
+  [[ -z "$norm" || "$norm" == "null" ]] && return 1
+
+  # Drop fractional seconds
+  norm="${norm%%.*}${norm#*.}"  # safe no-op if no '.'
+  norm="${norm%%.*}"           # ensure removed
+
+  # Convert 'T' to space and drop timezone info for parsing; then parse as local time.
+  # If 'Z' or offset present, remove it. (Conservative; exact TZ handling isn't required for coarse thresholds.)
+  norm="${norm/T/ }"
+  norm="${norm%%Z}"
+  norm="${norm%%+*}"
+  norm="${norm%%-*}"  # if an offset like -05:00 exists, this will truncate; handled below
+
+  # If we accidentally truncated the date because of '-' in the date portion, restore by re-parsing safely:
+  # Prefer first 19 chars "YYYY-MM-DD HH:MM:SS" if present.
+  norm="${iso/T/ }"
+  norm="${norm:0:19}"
+
+  /bin/date -j -f "%Y-%m-%d %H:%M:%S" "$norm" "+%s" 2>/dev/null
+}
 
 get_console_user() {
   local u
@@ -24,11 +75,11 @@ run_bzcli() {
   if [[ -n "$u" ]]; then
     uid="$(id -u "$u" 2>/dev/null || true)"
     if [[ -n "$uid" ]]; then
-      /bin/launchctl asuser "$uid" /usr/bin/sudo -u "$u" "$BZCLI" "$@"
-      return
+      /bin/launchctl asuser "$uid" /usr/bin/sudo -u "$u" "$BZCLI" "$@" 2>/dev/null
+      return 0
     fi
   fi
-  "$BZCLI" "$@"
+  "$BZCLI" "$@" 2>/dev/null
 }
 
 # Not installed
@@ -36,22 +87,19 @@ if [[ ! -x "$BZCLI" ]]; then
   result "Not Installed"
 fi
 
-STATUS="$(run_bzcli report -v /backup/status/summary 2>/dev/null | tr -d '\r' | tail -n 1 || true)"
-STATUS="${STATUS:-unknown}"
+STATUS_RAW="$(run_bzcli report -v /backup/status/summary | tr -d '\r' | tail -n 1 || true)"
+STATUS_RAW="$(trim "${STATUS_RAW:-}")"
+STATUS_LC="$(lower "${STATUS_RAW:-unknown}")"
 
-LAST_BACKUP="$(run_bzcli report -v /backup/lastbackup 2>/dev/null | tr -d '\r' | tail -n 1 || true)"
-LAST_BACKUP="${LAST_BACKUP:-}"
+LAST_BACKUP_RAW="$(run_bzcli report -v /backup/lastbackup | tr -d '\r' | tail -n 1 || true)"
+LAST_BACKUP_RAW="$(trim "${LAST_BACKUP_RAW:-}")"
 
-shopt -s nocasematch
-if [[ -z "$LAST_BACKUP" || "$LAST_BACKUP" == "null" ]]; then
+# If no last backup timestamp, treat as Critical
+if [[ -z "$LAST_BACKUP_RAW" || "$LAST_BACKUP_RAW" == "null" ]]; then
   result "Critical"
 fi
-shopt -u nocasematch
 
-NORM="${LAST_BACKUP/T/ }"
-NORM="${NORM:0:19}"
-
-LAST_BACKUP_EPOCH="$(date -j -f "%Y-%m-%d %H:%M:%S" "$NORM" "+%s" 2>/dev/null || true)"
+LAST_BACKUP_EPOCH="$(iso8601_to_epoch "$LAST_BACKUP_RAW" || true)"
 if [[ -z "$LAST_BACKUP_EPOCH" ]]; then
   result "Critical"
 fi
@@ -59,20 +107,25 @@ fi
 NOW_EPOCH="$(date "+%s")"
 HOURS_SINCE_BACKUP=$(( (NOW_EPOCH - LAST_BACKUP_EPOCH) / 3600 ))
 
-case "$STATUS" in
-  *Error*|*ERROR*|*Waiting*|*Paused*|*pause*|*Initial\ backup:\ Paused*)
+case "$STATUS_LC" in
+  *error*|*waiting*|*paused*|*pause*|*initial\ backup:*paused*)
     result "Critical"
     ;;
 esac
 
-if [[ "$STATUS" == *Active* || "$STATUS" == *Backing\ up* || "$STATUS" == *Backing*up* ]]; then
-  if [[ "$HOURS_SINCE_BACKUP" -le 24 ]]; then
+# If actively backing up, and last backup is fresh, mark Healthy.
+if [[ "$STATUS_LC" == *active* || "$STATUS_LC" == *backing*up* || "$STATUS_LC" == *backing\ up* ]]; then
+  if [[ "$HOURS_SINCE_BACKUP" -le "$WARN_AFTER_HOURS" ]]; then
     result "Healthy"
   fi
 fi
 
-if [[ "$HOURS_SINCE_BACKUP" -gt 24 && "$HOURS_SINCE_BACKUP" -lt 168 ]]; then
+if [[ "$HOURS_SINCE_BACKUP" -gt "$WARN_AFTER_HOURS" && "$HOURS_SINCE_BACKUP" -lt "$CRIT_AFTER_HOURS" ]]; then
   result "Warning"
+fi
+
+if [[ "$HOURS_SINCE_BACKUP" -ge "$CRIT_AFTER_HOURS" ]]; then
+  result "Critical"
 fi
 
 result "Critical"
