@@ -52,9 +52,16 @@ The Extension Attribute returns one of the following values:
 
 ## Smart Group Recommendations
 
-Create Smart Computer Groups in Jamf using:
+Create Smart Computer Groups in Jamf using the following criteria:
 
-Criteria:Recommended groups:
+**Criteria Example:**
+
+Extension Attribute  
+Backblaze – Health Score  
+is  
+RED
+
+Recommended Smart Groups:
 
 - Backblaze – Health: RED (Critical)
 - Backblaze – Health: YELLOW (Warning)
@@ -86,6 +93,32 @@ Segment devices requiring investigation.
 - No external dependencies
 - Safe fallback (unknown states default to RED)
 
+---
+
+## Health Score Automation Flow
+
+The following diagram illustrates how the Health Score integrates with Jamf workflows:
+
+```
+Device
+   │
+   ▼
+bzcli telemetry
+   │
+   ▼
+Extension Attribute (Health Score)
+   │
+   ▼
+Jamf Inventory Update (recon)
+   │
+   ▼
+Smart Computer Groups (GREEN / YELLOW / RED / NOT_INSTALLED)
+   │
+   ▼
+Jamf Policies (Remediation / Reporting)
+```
+
+This flow demonstrates how telemetry becomes actionable segmentation and policy-driven automation within Jamf.
 ---
 
 ## Notes
