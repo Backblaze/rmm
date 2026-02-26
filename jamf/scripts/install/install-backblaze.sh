@@ -56,7 +56,7 @@ BZ_INSTALL_CFG_B64="${BZ_INSTALL_CFG_B64:-""}"
 BZ_INSTALL_CFG_URL="${BZ_INSTALL_CFG_URL:-""}"
 
 # UAT default: internal v10 build DMG (can be overridden by $8)
-BZ_DMG_URL_DEFAULT="https://f000.backblazeb2.com/file/b2-computer-backup-files/macos/computerbackup/bzinstall-mac-10.0.0.1030.dmg"
+BZ_DMG_URL_DEFAULT="https://secure.backblaze.com/mac/install_backblaze.dmg"
 BZ_DMG_URL="${BZ_DMG_URL:-$BZ_DMG_URL_DEFAULT}"
 
 #############################################
@@ -263,7 +263,11 @@ if pgrep -x "bzserv" >/dev/null 2>&1; then
     rc=0
   fi
 else
-  log "Fresh Backblaze Business Group install for $BZ_EMAIL…"
+  if [[ $HAVE_INSTALL_CFG -eq 1 ]]; then
+    log "Fresh Backblaze Business Group install (advanced JSON config)."
+  else
+    log "Fresh Backblaze Business Group install for ${BZ_EMAIL}…"
+  fi
 
   if [[ $HAVE_INSTALL_CFG -eq 1 ]]; then
     log "Running advanced installer with JSON config (-cfg)."
@@ -367,6 +371,10 @@ else
   log "Start-backup not requested (set Jamf $9 or env BZ_START_BACKUP=1 to enable)."
 fi
 
-log "Backblaze client installed and running. Group ID: $BZ_GROUP_ID"
+if [[ -n "${BZ_GROUP_ID:-}" ]]; then
+  log "Backblaze client installed and running. Group ID: $BZ_GROUP_ID"
+else
+  log "Backblaze client installed and running. Group ID: (configured via JSON)"
+fi
 log "=== Backblaze Business Group install completed successfully (UAT) ==="
 exit 0
