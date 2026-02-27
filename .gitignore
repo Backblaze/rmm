@@ -29,3 +29,4 @@
 # Python (por si alguien prueba scripts)
 __pycache__/
 *.pyc.DS_Store
+.DS_Store

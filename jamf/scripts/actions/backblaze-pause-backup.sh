@@ -30,6 +30,19 @@ find_bzcli() {
   return 1
 }
 
+normalize_status() {
+  # bzcli report output often comes wrapped in quotes; normalize for clean logs
+  local s
+  s="${1:-unknown}"
+  # take first line only, strip CR, trim surrounding quotes and whitespace
+  s="$(printf '%s' "$s" | head -n 1 | tr -d '\r' | sed -E 's/^[[:space:]]*"?//; s/"?[[:space:]]*$//')"
+  if [[ -z "$s" ]]; then
+    echo "unknown"
+  else
+    echo "$s"
+  fi
+}
+
 log "=== START ==="
 
 if [[ ${EUID} -ne 0 ]]; then
@@ -52,8 +65,9 @@ fi
 
 log "Using bzcli: $BZCLI"
 
-PRE_STATUS="$($BZCLI report -v /backup/status/summary 2>/dev/null | tr -d '\r' || echo unknown)"
-log "Status BEFORE: ${PRE_STATUS:-unknown}"
+PRE_STATUS_RAW="$($BZCLI report -v /backup/status/summary 2>/dev/null || echo unknown)"
+PRE_STATUS="$(normalize_status "$PRE_STATUS_RAW")"
+log "Status BEFORE: \"$PRE_STATUS\""
 
 # Execute action
 set +e
@@ -61,8 +75,9 @@ set +e
 RC=$?
 set -e
 
-POST_STATUS="$($BZCLI report -v /backup/status/summary 2>/dev/null | tr -d '\r' || echo unknown)"
-log "Status AFTER: ${POST_STATUS:-unknown}"
+POST_STATUS_RAW="$($BZCLI report -v /backup/status/summary 2>/dev/null || echo unknown)"
+POST_STATUS="$(normalize_status "$POST_STATUS_RAW")"
+log "Status AFTER: \"$POST_STATUS\""
 
 if [[ $RC -eq 0 ]]; then
   log "SUCCESS: pause-backup command executed."

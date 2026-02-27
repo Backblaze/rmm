@@ -12,7 +12,7 @@
 #
 # Example:
 #   sudo BZ_EMAIL="user@company.com" BZ_GROUP_ID="123" BZ_GROUP_TOKEN="abc" \
-#     BZ_DMG_URL="https://f000.backblazeb2.com/file/.../bzinstall-mac-10.0.0.1016.dmg" \
+#     BZ_DMG_URL="https://f000.backblazeb2.com/file/b2-computer-backup-files/macos/computerbackup/bzinstall-mac-10.0.0.1030.dmg" \
 #     bash install-backblaze.sh
 
 set -euo pipefail
@@ -22,12 +22,14 @@ DMG_PATH="${DMG_PATH:-/tmp/backblaze_installer.dmg}"
 MOUNT_POINT=""
 
 log() {
-  local msg="[$(date '+%Y-%m-%d %H:%M:%S')] [backblaze][install] $*"
+  local msg
+  msg="[$(/bin/date '+%Y-%m-%d %H:%M:%S')] [backblaze][install] $*"
   if ! { touch "$LOG_FILE" 2>/dev/null; }; then
     LOG_FILE="/tmp/backblaze_install.log"
   fi
   echo "$msg" | tee -a "$LOG_FILE"
 }
+
 
 cleanup() {
   if [[ -n "${MOUNT_POINT:-}" ]]; then

@@ -1,32 +1,3 @@
-# Optional Smart Computer Groups
-
-Smart Computer Groups can be created in Jamf Pro using Extension Attributes
-to automate targeting and remediation.
-
-⚠️ **Optional Feature**
-
-These groups are provided as a convenience and are not required.
-
----
-
-## Example Groups
-
-- Backblaze Installed
-- Backup Paused
-- Backup Not Running
-
----
-
-## When to Use
-
-Recommended for:
-- Large Jamf environments
-- Automated remediation workflows
-- Self Service targeting
-
-Not required for:
-- Small environments
-- Manual policy execution
 # Optional Smart Computer Groups (Jamf Pro)
 
 This document provides **example Smart Computer Groups** that can be created in **Jamf Pro** using Backblaze Extension Attributes.
@@ -86,6 +57,59 @@ The following Smart Groups are examples that can be created using the Extension 
 
 ---
 
+## Health-Based Smart Groups (Recommended for Enterprise)
+
+If the optional **Health Classification** Extension Attribute is implemented, Smart Groups can be simplified and standardized using deterministic health states.
+
+### Backblaze – Healthy
+
+**Criteria:**
+- Extension Attribute `Backblaze – Health Classification` **is** `Healthy`
+
+**Use cases:**
+- Compliance confirmation
+- Executive reporting dashboards
+
+---
+
+### Backblaze – Warning
+
+**Criteria:**
+- Extension Attribute `Backblaze – Health Classification` **is** `Warning`
+
+**Use cases:**
+- Early remediation workflows
+- Targeted follow-up policies
+
+---
+
+### Backblaze – Critical
+
+**Criteria:**
+- Extension Attribute `Backblaze – Health Classification` **is** `Critical`
+
+**Use cases:**
+- Automated remediation
+- Escalation workflows
+- Compliance enforcement
+
+---
+
+### Backblaze – Not Installed
+
+**Criteria:**
+- Extension Attribute `Backblaze – Installed` **is not** `Installed`
+
+**Use cases:**
+- Deployment gap detection
+- Installation policy scoping
+
+---
+
+Using health-based segmentation reduces Smart Group complexity and enables consistent automation models across large Jamf environments.
+
+---
+
 ## When to use Smart Groups
 
 Recommended for:
@@ -105,3 +129,6 @@ Not required for:
 - Smart Groups depend on Extension Attributes being present and up to date
 - Inventory must be refreshed for changes to appear
 - Administrators may customize criteria to match internal standards
+- Health-based Smart Groups provide a cleaner segmentation model than status-string parsing.
+- Organizations may align Smart Groups with internal compliance policies.
+- Smart Groups should remain declarative and inventory-driven.

@@ -1,8 +1,42 @@
-# Jamf Pro Integration – Backblaze (UAT)
+# Jamf Pro Integration – Backblaze
 
 This folder contains Jamf Pro–specific scripts and documentation for integrating **Backblaze Computer Backup** using `bzcli`.
 
-This implementation was created for **Jamf Pro UAT / sandbox validation** and can be adapted for customer deployments.
+This reference implementation demonstrates enterprise-scale deployment, monitoring, and operational automation using Jamf-native constructs. It can be adapted to fit specific customer environments and policy requirements.
+
+## Integration Model
+
+This Jamf integration follows a layered automation model:
+
+1. **Deployment Layer**  
+   Silent installation and Business Group enrollment using Jamf policies.
+
+2. **Telemetry Layer**  
+   Inventory data collection via Jamf Extension Attributes powered by `bzcli`.
+
+3. **Segmentation Layer**  
+   Dynamic Smart Computer Groups for scoped automation.
+
+4. **Operational Layer**  
+   Remote backup control using `bzcli` action scripts.
+
+5. **Compliance Layer (Optional)**  
+   Deterministic health classification and automated remediation workflows.
+
+This structure aligns with Jamf-native best practices and supports scalable enterprise deployments.
+
+---
+
+## Intended Audience
+
+This integration is designed for:
+
+- Enterprise IT administrators
+- Jamf Pro administrators
+- Managed Service Providers (MSPs)
+- RMM automation engineers
+
+It provides structured, production-ready building blocks for deploying and managing Backblaze Computer Backup at scale.
 
 ---
 
@@ -34,6 +68,22 @@ jamf/
 
 ## Scripts
 
+## Script Index
+
+| Script | Phase | Purpose |
+|--------|-------|---------|
+| install-backblaze.sh | Deployment | Silent installation and Business Group enrollment |
+| backup-now.sh | Operations | Trigger immediate backup |
+| pause-backup.sh | Operations | Pause backup activity |
+| resume-backup.sh | Operations | Resume backup activity |
+| backblaze-client-version.sh | Telemetry | Report installed client version |
+| backblaze-installed.sh | Telemetry | Detect installation presence |
+| backblaze-status-summary.sh | Telemetry | Report backup status summary |
+| backblaze-last-backup-iso8601.sh | Telemetry | Report last successful backup timestamp |
+| backblaze-hguid.sh | Telemetry | Report Host GUID identifier |
+
+---
+
 ### Install
 
 - `scripts/install/install-backblaze.sh`
@@ -56,7 +106,21 @@ Installs (or upgrades) Backblaze Computer Backup and can enroll a device into a 
 
 ---
 
-## Notes
+## Deployment Considerations
 
 - Smart Computer Groups are optional; core functionality works without them.
-- Validate in UAT first, then adapt defaults (installer URL/version, scoping, and parameters) for production.
+- Validate the integration in a staged or non-production environment before broad rollout.
+- Adjust installer URL/version, scoping, and script parameters to align with organizational security standards.
+- Extension Attributes are inventory-driven and do not modify device state.
+- Health classification thresholds (if implemented) should align with internal compliance policies.
+
+---
+
+## Support & Scope
+
+This Jamf integration is provided as a reference implementation for enterprise automation scenarios.
+
+Backblaze supports the core client functionality and `bzcli` interface.  
+Customization of Jamf policies, Smart Groups, compliance models, and deployment architecture remains the responsibility of the implementing organization.
+
+Organizations are encouraged to adapt logging, validation logic, segmentation strategy, and health classification thresholds to match internal operational and regulatory requirements.

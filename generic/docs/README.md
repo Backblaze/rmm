@@ -1,13 +1,31 @@
 # Generic Backblaze Integration (bzcli)
 
-This folder documents the **platform‑agnostic** Backblaze integration using `bzcli`.
-It is intended for IT administrators and MSPs who are **not** using Jamf, Kandji, Addigy, or JumpCloud, or who want a portable reference implementation.
+This directory provides a **platform‑agnostic reference implementation** for integrating Backblaze Computer Backup using `bzcli`.
 
-These scripts produce **plain‑text output** suitable for:
-- RMM tools
-- shell automation
-- cron jobs
-- exporting to CSV / Excel
+It is designed for environments that:
+
+- Use a custom or in‑house RMM platform
+- Require portable shell‑based automation
+- Integrate backup telemetry into existing monitoring pipelines
+- Prefer a vendor‑neutral implementation model
+
+All scripts produce **plain‑text, automation‑safe output** suitable for:
+
+- RMM ingestion
+- Shell automation
+- Scheduled execution (cron / launchd)
+- Export to CSV, Excel, or BI systems
+
+## Intended Audience
+
+This integration is intended for:
+
+- Enterprise IT administrators
+- Managed Service Providers (MSPs)
+- DevOps and automation engineers
+- Security and compliance teams integrating backup telemetry
+
+It provides reusable, production‑ready building blocks for backup deployment, monitoring, and operational control.
 
 ---
 
@@ -52,8 +70,11 @@ generic/
 
 - macOS
 - Backblaze Desktop Client v10+
-- `bzcli` available at  
-  `/Applications/Backblaze.app/Contents/MacOS/bzcli`
+- `bzcli` installed with the Backblaze client (default path shown below)
+
+  ```
+  /Applications/Backblaze.app/Contents/MacOS/bzcli
+  ```
 
 ---
 
@@ -76,3 +97,7 @@ This makes them safe for:
 - shell parsing
 
 ---
+
+## Support Model
+
+These scripts are provided as reference implementations and may require adaptation to align with organizational security policies, compliance requirements, or infrastructure standards.
