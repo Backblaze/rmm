@@ -1,6 +1,6 @@
 {
   "installation": {
-    "cmd_param": "-nogui -createaccount_or_signinaccount davidmora.production1+account4@gmail.com 161218 1w5nd8d29hpebluosrr59kq157 us"
+    "cmd_param": "-nogui -createaccount_or_signinaccount user@company.com <GROUP_ID> <GROUP_TOKEN> us"
   },
   "settings": {
     "online_hostname": "managed-mac-hostname",
