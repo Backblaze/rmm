@@ -1,6 +1,6 @@
 {
   "installation": {
-    "cmd_param": "-nogui -createaccount_or_signinaccount user@company.com <GROUP_ID> <GROUP_TOKEN> <REGION>"
+    "cmd_param": "-nogui -createaccount_or_signinaccount user@company.com <GROUP_ID> <GROUP_TOKEN> us"
   },
   "settings": {
     "online_hostname": "managed-mac-hostname",
@@ -9,4 +9,3 @@
     "suppress_notification": true
   }
 }
-
