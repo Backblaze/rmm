@@ -11,7 +11,7 @@
 #   BZ_DMG_URL (defaults to a v10 installer URL placeholder)
 #
 # Example:
-#   sudo BZ_EMAIL="user@company.com" BZ_GROUP_ID="123" BZ_GROUP_TOKEN="abc" \
+#   sudo BZ_EMAIL="user@example.com" BZ_GROUP_ID="123" BZ_GROUP_TOKEN="abc" \
 #     BZ_DMG_URL="https://f000.backblazeb2.com/file/b2-computer-backup-files/macos/computerbackup/bzinstall-mac-10.0.0.1030.dmg" \
 #     bash install-backblaze.sh
 

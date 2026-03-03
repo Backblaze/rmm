@@ -21,7 +21,7 @@ In Jamf Pro, this enables IT admins to pass an enterprise configuration during d
 ```json
 {
   "installation": {
-    "cmd_param": "-nogui -createaccount_or_signinaccount user@company.com <GROUP_ID> <GROUP_TOKEN> <REGION>"
+    "cmd_param": "-nogui -createaccount_or_signinaccount user@example.com <GROUP_ID> <GROUP_TOKEN> <REGION>"
   },
   "settings": {
     "online_hostname": "managed-mac-hostname",
