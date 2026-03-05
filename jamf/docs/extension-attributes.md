@@ -4,6 +4,14 @@ This document describes optional **Jamf Pro Extension Attributes (EAs)** used to
 
 These Extension Attributes are **not required** for basic Backblaze operation. They are intended for **visibility, reporting, and automation** during UAT and beyond.
 
+## Deployment Context
+
+These Extension Attributes are designed for the **centralized Backblaze deployment model** used in enterprise and RMM-managed environments.
+
+In this architecture, a single administrative Backblaze account or Business Group configuration manages multiple endpoints while Jamf provides inventory reporting, policy automation, and device segmentation.
+
+For decentralized deployments where each device signs in with its own Backblaze account, refer to the official Backblaze Jamf documentation on the Backblaze documentation site.
+
 ---
 
 ## When to use Extension Attributes
@@ -140,6 +148,10 @@ This attribute is optional but recommended for enterprise compliance enforcement
 - Critical → Last backup > 7 days or error state
 
 This classification can be used to drive Smart Group scoping and automated remediation policies.
+
+---
+
+These Extension Attributes complement the operational command model documented in the repository CLI reference (`docs/man/backblaze-rmm.md`) and provide the telemetry layer used for device segmentation and remediation workflows.
 
 ---
 

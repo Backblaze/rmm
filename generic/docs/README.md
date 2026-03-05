@@ -9,23 +9,17 @@ It is designed for environments that:
 - Integrate backup telemetry into existing monitoring pipelines
 - Prefer a vendor‑neutral implementation model
 
-All scripts produce **plain‑text, automation‑safe output** suitable for:
+## Deployment Model
 
-- RMM ingestion
-- Shell automation
-- Scheduled execution (cron / launchd)
-- Export to CSV, Excel, or BI systems
+The generic integration demonstrates a **centralized Backblaze deployment model**
+commonly used in enterprise and RMM-managed environments.
 
-## Intended Audience
+In this model, a single administrative Backblaze account or Business Group
+configuration manages multiple endpoints through automation scripts.
 
-This integration is intended for:
-
-- Enterprise IT administrators
-- Managed Service Providers (MSPs)
-- DevOps and automation engineers
-- Security and compliance teams integrating backup telemetry
-
-It provides reusable, production‑ready building blocks for backup deployment, monitoring, and operational control.
+Organizations that deploy Backblaze using individual user accounts
+(a decentralized deployment model) should refer to the official
+Backblaze documentation.
 
 ---
 
@@ -63,6 +57,18 @@ generic/
 | Backup actions | `actions.md` |
 | Business Group installation | `install.md` |
 | Reporting & monitoring | `reporting.md` |
+
+---
+
+## Security Notice
+
+Do not store real Backblaze credentials, tokens, or account identifiers
+in scripts or configuration files.
+
+All examples in this repository use placeholders.
+
+Credentials should be securely managed using the secret-management
+capabilities of the RMM or automation platform being used.
 
 ---
 

@@ -4,6 +4,14 @@ This folder contains Jamf Pro–specific scripts and documentation for integrati
 
 This reference implementation demonstrates enterprise-scale deployment, monitoring, and operational automation using Jamf-native constructs. It can be adapted to fit specific customer environments and policy requirements.
 
+## Deployment Model
+
+This Jamf integration demonstrates a **centralized Backblaze deployment model** commonly used in enterprise and RMM-managed environments.
+
+In this model, a single administrative Backblaze account (or Business Group configuration) manages multiple endpoints through Jamf automation policies and scripts.
+
+For environments where each device signs in with its own Backblaze account (a decentralized deployment model), refer to the standard Backblaze Jamf documentation on the Backblaze documentation site.
+
 ## Integration Model
 
 This Jamf integration follows a layered automation model:
@@ -63,6 +71,18 @@ jamf/
 - **Actions** (backup now / pause / resume): `actions.md`
 - **Extension Attributes** (inventory/reporting in Jamf): `extension-attributes.md`
 - **Smart Computer Groups** (optional examples): `optional-smart-groups.md`
+
+---
+
+## CLI Reference
+
+A Unix-style command reference for operational automation commands used by
+RMM and MDM platforms is available in the repository:
+
+`docs/man/backblaze-rmm.md`
+
+This reference documents the operational command model used by the
+Backblaze RMM automation layer and complements the Jamf integration scripts.
 
 ---
 

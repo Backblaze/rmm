@@ -53,6 +53,24 @@ This repository follows a layered automation model:
 Jamf Pro is provided as a reference RMM implementation.  
 The Generic integration exposes platform-neutral primitives that can be reused across other RMM environments.
 
+## Deployment Models
+
+Backblaze supports two deployment models when integrating with RMM or MDM platforms.
+
+### Centralized Deployment (Enterprise / RMM)
+
+A single administrative Backblaze account manages multiple endpoints through automation scripts and platform policies.
+
+This model is commonly used by enterprise IT teams, Managed Service Providers (MSPs), and RMM environments where centralized control and compliance visibility are required.
+
+### Decentralized Deployment
+
+Each endpoint signs in with its own Backblaze account.
+
+This approach is commonly used in smaller environments or individual device deployments where devices are managed independently.
+
+The integrations in this repository primarily demonstrate the **centralized deployment model** used in enterprise and RMM-managed environments.
+
 ---
 
 ## Supported Platforms
@@ -130,6 +148,16 @@ That document explains:
 - Administrators should review and adapt scripts to meet their internal security and operational requirements.
 - Defaults and examples are provided as guidance and may be adapted to align with organizational standards.
 
+## Security Notice
+
+This repository contains reference automation scripts.
+
+Do not store real credentials, tokens, or account identifiers in scripts or configuration files.
+
+All examples in this repository use placeholders.
+
+Administrators should securely manage credentials using their RMM platform's secret management features and avoid embedding sensitive values directly in automation scripts.
+
 ## Known Apple Platform Limitations
 
 The following behaviors are enforced by macOS and **cannot be bypassed by Jamf Pro, PPPC profiles, or any MDM solution**.
@@ -156,3 +184,9 @@ After this one‑time approval:
 - Behavior remains consistent after reboot or reinstall
 
 This is expected macOS behavior and does not indicate a deployment issue.
+
+## Documentation
+
+Official Backblaze documentation for Jamf deployments:
+
+https://www.backblaze.com/computer-backup/docs/how-to-install-the-backblaze-client-silently-with-jamf-pro-mac
