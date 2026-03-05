@@ -6,6 +6,14 @@ This document provides **example Smart Computer Groups** that can be created in 
 
 Smart Computer Groups are **not required** for installing or operating Backblaze. They are provided as **examples only** to demonstrate how Extension Attributes may be used for visibility or automation during UAT.
 
+## Deployment Context
+
+These Smart Computer Group examples assume the **centralized Backblaze deployment model** used in enterprise and RMM-managed environments.
+
+In this architecture, Backblaze endpoints are installed and managed through Jamf automation while telemetry is collected using Extension Attributes. Smart Computer Groups then provide segmentation for reporting, remediation policies, and operational workflows.
+
+For decentralized deployments where each device signs in with its own Backblaze account, refer to the official Backblaze Jamf documentation on the Backblaze documentation site.
+
 ---
 
 ## Purpose
@@ -23,6 +31,8 @@ They are most useful in **large or highly automated Jamf environments**.
 ## Example Smart Groups
 
 The following Smart Groups are examples that can be created using the Extension Attributes documented in `extension-attributes.md`.
+
+These Smart Groups represent the **segmentation layer** of the Jamf integration architecture and complement the operational command model documented in the CLI reference (`docs/man/backblaze-rmm.md`).
 
 ### Backblaze Installed
 
@@ -112,7 +122,7 @@ Using health-based segmentation reduces Smart Group complexity and enables consi
 
 ## When to use Smart Groups
 
-Recommended for:
+Recommended for enterprise environments such as:
 - Large Jamf deployments
 - Automated remediation workflows
 - Operational reporting

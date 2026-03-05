@@ -4,6 +4,14 @@ This document describes how to integrate **Backblaze Computer Backup** with **Ja
 
 This Jamf implementation serves as the reference RMM model for enterprise deployment, telemetry, and operational control.
 
+## Deployment Context
+
+This Jamf integration follows the **centralized Backblaze deployment model** used in enterprise and RMM-managed environments.
+
+In this model, a single administrative Backblaze account or Business Group configuration manages multiple endpoints through Jamf automation policies and scripts.
+
+For decentralized deployments where each device signs in with its own Backblaze account, refer to the official Backblaze Jamf documentation on the Backblaze documentation site.
+
 ---
 
 ## What is included
@@ -72,6 +80,8 @@ jamf/
 
 # Jamf Actions – Backblaze (bzcli)
 
+These operational actions correspond to the command model documented in the repository CLI reference (`docs/man/backblaze-rmm.md`) and represent common automation primitives used in RMM and MDM workflows.
+
 This document describes the **Jamf Pro action scripts** that use `bzcli` to control Backblaze Computer Backup on macOS devices.
 
 These scripts are designed to be used in **Jamf Policies** and do not require user interaction.
@@ -134,7 +144,7 @@ Resumes Backblaze backups after being paused.
 - No script parameters are required
 - Scripts must run as **root** (default in Jamf)
 - Scripts log to:
-  - `/var/log/backblaze_bzcli_action.log`
+  - `/var/log/backblaze_bzcli_action.log` (or the log path defined in the script)
 
 ---
 
