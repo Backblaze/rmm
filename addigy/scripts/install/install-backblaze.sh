@@ -23,7 +23,7 @@
 #
 # Notes:
 # - Addigy runs scripts as root.
-# - Logs to stdout + /var/log/backblaze_mdm_install.log
+# - Logs to stdout + /var/log/backblaze_addigy_install.log
 # - Does NOT print tokens.
 
 set -euo pipefail
@@ -31,7 +31,7 @@ set -euo pipefail
 #############################################
 # LOGGING
 #############################################
-LOG_FILE="/var/log/backblaze_mdm_install.log"
+LOG_FILE="/var/log/backblaze_addigy_install.log"
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 exec > >(tee -a "$LOG_FILE") 2>&1
 
