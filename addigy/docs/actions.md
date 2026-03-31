@@ -1,0 +1,161 @@
+# Jamf Pro – Backblaze Integration
+
+This document describes how to integrate **Backblaze Computer Backup** with **Jamf Pro** using the reference scripts and configuration provided in this repository.
+
+This Jamf implementation serves as the reference RMM model for enterprise deployment, telemetry, and operational control.
+
+## Deployment Context
+
+This Jamf integration follows the **centralized Backblaze deployment model** used in enterprise and RMM-managed environments.
+
+In this model, a single administrative Backblaze account or Business Group configuration manages multiple endpoints through Jamf automation policies and scripts.
+
+For decentralized deployments where each device signs in with its own Backblaze account, refer to the official Backblaze Jamf documentation on the Backblaze documentation site.
+
+---
+
+## What is included
+
+The Jamf integration is modular. You may deploy only what you need.
+
+- **Installer**
+  - Install or upgrade Backblaze
+  - Enroll devices into a Backblaze Business Group
+
+- **Actions (bzcli)**
+  - Trigger backup now
+  - Pause backups
+  - Resume backups
+
+- **Extension Attributes (optional)**
+  - Backblaze client version
+  - Installation state
+  - Backup status summary
+  - Last successful backup timestamp
+  - Backblaze Host GUID (HGUID)
+
+- **Smart Groups (optional)**
+  - Examples for scoping and automation workflows
+
+---
+
+## Directory structure
+
+```text
+jamf/
+├── docs/
+│   ├── README.md
+│   ├── actions.md
+│   ├── extension-attributes.md
+│   └── optional-smart-groups.md
+└── scripts/
+    ├── actions/
+    ├── configuration/
+    ├── extension-attributes/
+    └── install/
+```
+
+---
+
+## Getting Started
+
+1. Review the installer documentation
+   - `jamf/scripts/install/install-backblaze.sh`
+
+2. Create Jamf policies using the action scripts
+   - `jamf/scripts/actions/`
+
+3. (Optional) Add Extension Attributes for reporting
+   - `jamf/scripts/extension-attributes/`
+
+4. (Optional) Use Smart Groups for staged or phased rollouts
+   - See `optional-smart-groups.md`
+
+---
+
+## Notes
+
+- All scripts are intended to be reviewed and adapted to local Jamf standards.
+- Defaults and examples may be adapted to align with organizational security and deployment standards.
+
+# Jamf Actions – Backblaze (bzcli)
+
+These operational actions correspond to the command model documented in the repository CLI reference (`docs/man/backblaze-rmm.md`) and represent common automation primitives used in RMM and MDM workflows.
+
+This document describes the **Jamf Pro action scripts** that use `bzcli` to control Backblaze Computer Backup on macOS devices.
+
+These scripts are designed to be used in **Jamf Policies** and do not require user interaction.
+
+---
+
+## Available actions
+
+### Backup Now
+
+**Script:**
+```
+jamf/scripts/actions/backblaze-backup-now.sh
+```
+
+**Description:**
+Triggers an immediate Backblaze backup if one is not already running.
+
+**Typical use cases:**
+- Manual remediation by IT
+- Post-install verification
+- User-initiated self service action
+
+---
+
+### Pause Backup
+
+**Script:**
+```
+jamf/scripts/actions/backblaze-pause-backup.sh
+```
+
+**Description:**
+Pauses Backblaze backups until they are explicitly resumed.
+
+**Typical use cases:**
+- Temporary bandwidth control
+- Maintenance windows
+
+---
+
+### Resume Backup
+
+**Script:**
+```
+jamf/scripts/actions/backblaze-resume-backup.sh
+```
+
+**Description:**
+Resumes Backblaze backups after being paused.
+
+**Typical use cases:**
+- End of maintenance window
+- Automated remediation
+
+---
+
+## Jamf policy configuration notes
+
+- No script parameters are required
+- Scripts must run as **root** (default in Jamf)
+- Scripts log to:
+  - `/var/log/backblaze_bzcli_action.log` (or the log path defined in the script)
+
+---
+
+## Error handling
+
+- If `bzcli` is not found, the script exits with a non-zero status
+- Exit codes are logged and visible in Jamf policy logs
+
+---
+
+## Notes
+
+- These actions do not modify configuration or enrollment
+- They assume Backblaze is already installed

@@ -1,0 +1,12 @@
+{
+  "installation": {
+    "cmd_param": "-nogui -createaccount_or_signinaccount user@example.com <GROUP_ID> <GROUP_TOKEN> us"
+  },
+  "settings": {
+    "online_hostname": "managed-mac-hostname",
+    "lock_exclusion": true,
+    "lock_schedule": true,
+    "suppress_notification": true
+  }
+}
+
