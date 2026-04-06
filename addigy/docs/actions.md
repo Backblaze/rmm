@@ -159,3 +159,129 @@ Resumes Backblaze backups after being paused.
 
 - These actions do not modify configuration or enrollment
 - They assume Backblaze is already installed
+
+# Addigy Actions – Backblaze (bzcli)
+
+This document describes the Addigy-aligned operational action model for **Backblaze Computer Backup** using `bzcli`.
+
+These actions correspond to the command model documented in the repository CLI reference (`docs/man/backblaze-rmm.md`) and represent common automation primitives used in RMM and MDM workflows.
+
+The current purpose of this document is to define the intended action model for Addigy while the sandbox environment is being prepared. Live validation of these actions in Addigy is still pending.
+
+---
+
+## Deployment Context
+
+This Addigy integration follows the **centralized Backblaze deployment model** used in enterprise and RMM-managed environments.
+
+In this model, a single administrative Backblaze account or Business Group configuration manages multiple endpoints through Addigy automation policies and scripts.
+
+For decentralized deployments where each device signs in with its own Backblaze account, refer to the standard Backblaze deployment documentation on the Backblaze documentation site.
+
+---
+
+## What is included
+
+The Addigy integration is modular. You may deploy only what you need.
+
+- **Installer**
+  - Install or upgrade Backblaze
+  - Enroll devices into a Backblaze Business Group
+
+- **Actions (bzcli)**
+  - Trigger backup now
+  - Pause backups
+  - Resume backups
+
+- **Reporting / Health-State Alignment (future)**
+  - Device-state visibility concepts aligned with `bzcli`
+  - Future health-state and reporting patterns pending sandbox validation
+
+---
+
+## Available actions
+
+### Backup Now
+
+**Planned script:**
+```text
+addigy/scripts/actions/backblaze-backup-now.sh
+```
+
+**Description:**
+Triggers an immediate Backblaze backup if one is not already running.
+
+**Typical use cases:**
+- Manual remediation by IT
+- Post-install verification
+- User-initiated support workflow
+
+---
+
+### Pause Backup
+
+**Planned script:**
+```text
+addigy/scripts/actions/backblaze-pause-backup.sh
+```
+
+**Description:**
+Pauses Backblaze backups until they are explicitly resumed.
+
+**Typical use cases:**
+- Temporary bandwidth control
+- Maintenance windows
+- Change windows requiring backup suspension
+
+---
+
+### Resume Backup
+
+**Planned script:**
+```text
+addigy/scripts/actions/backblaze-resume-backup.sh
+```
+
+**Description:**
+Resumes Backblaze backups after being paused.
+
+**Typical use cases:**
+- End of maintenance window
+- Automated remediation
+- Restore normal backup operations after temporary suspension
+
+---
+
+## Addigy action model notes
+
+- No final Addigy-specific input model has been validated yet for these action scripts
+- Scripts are expected to run as **root** in the managed execution context
+- Action logging should be separated from installer logging where possible
+- The preferred command model remains `bzcli`-driven and consistent with the shared RMM command reference
+
+---
+
+## Validation status
+
+At the current stage:
+- the **installer baseline** has been prepared
+- the **sandbox / trial environment** is still pending
+- these actions are documented as the intended operational model, but they have not yet been live-validated in Addigy
+
+---
+
+## Error handling expectations
+
+Once implemented and validated, action scripts should follow the same operational expectations used in the other platform baselines:
+
+- if `bzcli` is not found, the script should exit with a non-zero status
+- exit codes should be logged and visible through the platform execution logs
+- actions should not modify enrollment or identity state
+- actions should assume Backblaze is already installed
+
+---
+
+## Notes
+
+- This document is intentionally baseline-oriented and should be updated once Addigy sandbox validation is complete.
+- The goal is to keep the action model conceptually aligned with the Jamf and generic RMM patterns while adapting execution details to Addigy.
