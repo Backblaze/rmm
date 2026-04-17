@@ -1,29 +1,30 @@
 #!/bin/bash
-# Backblaze Business Group Install (Addigy) — UAT
+# Backblaze Business Group Install (Addigy)
 #
 # Purpose:
-#   UAT-focused installer that enrolls/signs-in devices to a Backblaze Business Group.
+#   Addigy-focused installer that enrolls/signs-in devices to a Backblaze Business Group.
 #   This script requires either group enrollment environment variables
 #   or an installer JSON config for the advanced installer path.
 #
 # Addigy Inputs (environment variables):
-#   BZ_GROUP_ID         = Backblaze Group ID            (required unless JSON config is used)
-#   BZ_GROUP_TOKEN      = Backblaze Group Auth Token    (required unless JSON config is used)
-#   BZ_EMAIL            = Backblaze Email               (required unless JSON config is used)
-#   BZ_REGION           = Backblaze Region              (optional)
-#   BZ_DMG_URL          = DMG URL override              (optional)
-#   BZ_START_BACKUP     = Start backup after install    (optional; 1/true/yes to enable)
+#   BZ_GROUP_ID         = Backblaze Group ID             (required unless JSON config is used)
+#   BZ_GROUP_TOKEN      = Backblaze Group Auth Token     (required unless JSON config is used)
+#   BZ_EMAIL            = Backblaze Email                (required unless JSON config is used)
+#   BZ_REGION           = Backblaze Region               (optional)
+#   BZ_DMG_URL          = DMG URL override               (optional)
+#   BZ_START_BACKUP     = Start backup after install     (optional; 1/true/yes to enable)
 #   BZ_INSTALL_CFG_B64  = Installer JSON config (base64) (optional; preferred)
 #   BZ_INSTALL_CFG_URL  = Installer JSON config URL      (optional; downloaded to /tmp)
 #
 # Defaults:
-#   - Uses the public v10 installer DMG by default (UAT)
+#   - Uses the public v10 installer DMG by default
 #   - Installs or silently upgrades if already installed
 #   - Verifies bzserv is running (retry loop)
 #
 # Notes:
 # - Addigy runs scripts as root.
 # - Logs to stdout + /var/log/backblaze_addigy_install.log
+# - Writes a support-friendly RMM log to /Library/Logs/BackblazeSilentInstaller/rmm.log
 # - Does NOT print tokens.
 
 set -euo pipefail
@@ -32,10 +33,14 @@ set -euo pipefail
 # LOGGING
 #############################################
 LOG_FILE="/var/log/backblaze_addigy_install.log"
+RMM_LOG_DIR="/Library/Logs/BackblazeSilentInstaller"
+RMM_LOG_FILE="${RMM_LOG_DIR}/rmm.log"
+mkdir -p "$RMM_LOG_DIR"
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"; }
 exec > >(tee -a "$LOG_FILE") 2>&1
 
-log "=== Backblaze Business Group install started (UAT) ==="
+log "=== Backblaze Business Group install started (Addigy) ==="
+log "RMM log file: $RMM_LOG_FILE"
 
 #############################################
 # REQUIRE ROOT
@@ -56,7 +61,7 @@ BZ_START_BACKUP="${BZ_START_BACKUP:-""}"
 BZ_INSTALL_CFG_B64="${BZ_INSTALL_CFG_B64:-""}"
 BZ_INSTALL_CFG_URL="${BZ_INSTALL_CFG_URL:-""}"
 
-# UAT default: public v10 build DMG (can be overridden by BZ_DMG_URL)
+# Default: public v10 build DMG (can be overridden by BZ_DMG_URL)
 BZ_DMG_URL_DEFAULT="https://secure.backblaze.com/mac/install_backblaze.dmg"
 BZ_DMG_URL="${BZ_DMG_URL:-$BZ_DMG_URL_DEFAULT}"
 
@@ -114,9 +119,9 @@ if [[ $HAVE_INSTALL_CFG -eq 1 ]]; then
 fi
 
 #############################################
-# VALIDATION (UAT)
+# VALIDATION
 #############################################
-# UAT requires either:
+# Requires either:
 # - explicit group enrollment environment variables (BZ_GROUP_ID, BZ_GROUP_TOKEN, BZ_EMAIL), OR
 # - a JSON config file for the advanced installer (-cfg)
 if [[ $HAVE_INSTALL_CFG -eq 0 ]]; then
@@ -244,7 +249,7 @@ if pgrep -x "bzserv" >/dev/null 2>&1; then
     echo "$UPGRADE_OUT" | tee -a "$LOG_FILE" >/dev/null
   fi
 
-  # UAT safeguard: treat "installed version is newer than the installer" as a no-op success.
+  # Safeguard: treat "installed version is newer than the installer" as a no-op success.
   # This can happen when testing a newer client against an older/incorrectly-versioned DMG.
   if [[ $rc -ne 0 ]] && echo "$UPGRADE_OUT" | grep -qi "installed version" && echo "$UPGRADE_OUT" | grep -qi "newer than the installer version"; then
     log "WARN: Installed client appears newer than the installer DMG; treating as no-op success."
@@ -255,6 +260,13 @@ else
     log "Fresh Backblaze Business Group install (advanced JSON config)."
   else
     log "Fresh Backblaze Business Group install for ${BZ_EMAIL}…"
+    log "Installer group id: $BZ_GROUP_ID"
+    if [[ -n "$BZ_REGION" ]]; then
+      log "Installer region: $BZ_REGION"
+    else
+      log "Installer region: (default)"
+    fi
+    log "Installer arg pattern (named-args): --createaccount_or_signinaccount -emailAddress ${BZ_EMAIL} -groupId ${BZ_GROUP_ID} -groupAuthToken [REDACTED]${BZ_REGION:+ -region ${BZ_REGION}}"
   fi
 
   if [[ $HAVE_INSTALL_CFG -eq 1 ]]; then
@@ -279,7 +291,7 @@ else
     fi
 
     set +e
-    "$BZ_INSTALLER" "${INSTALL_ARGS[@]}" 2>&1 | tee -a "$LOG_FILE" >/dev/null
+    "$BZ_INSTALLER" "${INSTALL_ARGS[@]}" 2>&1 | tee -a "$LOG_FILE" | tee -a "$RMM_LOG_FILE" >/dev/null
     rc=${PIPESTATUS[0]}
     set -e
   fi
@@ -287,6 +299,14 @@ fi
 
 log "bzinstall_mate exit code: $rc"
 if [[ "$rc" -ne 0 ]]; then
+  log "Collecting post-failure diagnostics..."
+  log "RMM log file for support collection: $RMM_LOG_FILE"
+  if [[ -d "/Library/Backblaze.bzpkg" ]]; then
+    log "Contents of /Library/Backblaze.bzpkg:"
+    ls -la /Library/Backblaze.bzpkg || true
+  else
+    log "/Library/Backblaze.bzpkg does not exist."
+  fi
   log "ERROR: Backblaze installer failed. Exit code: $rc"
   exit "$rc"
 fi
@@ -306,6 +326,12 @@ done
 if ! pgrep -x "bzserv" >/dev/null 2>&1; then
   log "ERROR: Backblaze service 'bzserv' is not running after install."
   exit 1
+fi
+
+if pgrep -x "bzbmenu" >/dev/null 2>&1; then
+  log "bzbmenu is already running."
+else
+  log "bzbmenu is not running yet."
 fi
 
 #############################################
@@ -359,10 +385,11 @@ else
   log "Start-backup not requested (set BZ_START_BACKUP=1 to enable)."
 fi
 
+log "RMM log file available at: $RMM_LOG_FILE"
 if [[ -n "${BZ_GROUP_ID:-}" ]]; then
   log "Backblaze client installed and running. Group ID: $BZ_GROUP_ID"
 else
   log "Backblaze client installed and running. Group ID: (configured via JSON)"
 fi
-log "=== Backblaze Business Group install completed successfully (UAT) ==="
+log "=== Backblaze Business Group install completed successfully (Addigy) ==="
 exit 0
