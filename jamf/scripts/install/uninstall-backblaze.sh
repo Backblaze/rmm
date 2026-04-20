@@ -1,6 +1,6 @@
 #!/bin/bash
 # Backblaze Uninstall (Jamf Pro)
-# Safe, idempotent uninstall with logging
+# Safe, idempotent uninstall with logging and vendor uninstaller support
 
 set -euo pipefail
 
@@ -17,6 +17,7 @@ fi
 
 BZPKG="/Library/Backblaze.bzpkg"
 UNINSTALL_BIN="${BZPKG}/UninstallBackblaze.app/Contents/MacOS/UninstallBackblaze"
+UNINSTALL_RESOURCES_DIR="${BZPKG}/UninstallBackblaze.app/Contents/Resources"
 
 log "Stopping Backblaze processes (best-effort)"
 pkill -x bzbmenu 2>/dev/null || true
@@ -29,17 +30,20 @@ launchctl bootout system /Library/LaunchDaemons/com.backblaze.* 2>/dev/null || t
 launchctl bootout gui/0 /Library/LaunchAgents/com.backblaze.* 2>/dev/null || true
 
 if [[ -x "$UNINSTALL_BIN" ]]; then
-  log "Running vendor uninstaller"
+  log "Running vendor uninstaller: $UNINSTALL_BIN"
+  if [[ -d "$UNINSTALL_RESOURCES_DIR" ]]; then
+    log "Vendor uninstaller resources directory: $UNINSTALL_RESOURCES_DIR"
+  fi
   set +e
   "$UNINSTALL_BIN" >/dev/null 2>&1
   rc=$?
   set -e
   log "Vendor uninstaller exit code: $rc"
 else
-  log "Vendor uninstaller not found, continuing manual cleanup"
+  log "Vendor uninstaller not found at: $UNINSTALL_BIN; continuing manual cleanup"
 fi
 
-log "Removing Backblaze directories"
+log "Removing Backblaze directories (best-effort cleanup after vendor uninstall)"
 rm -rf "/Library/Application Support/Backblaze" 2>/dev/null || true
 rm -rf "/Library/Backblaze.bzpkg" 2>/dev/null || true
 
