@@ -70,9 +70,9 @@ BZ_DMG_URL_DEFAULT="https://secure.backblaze.com/mac/install_backblaze.dmg"
 BZ_DMG_URL="${BZ_DMG_URL:-$BZ_DMG_URL_DEFAULT}"
 
 #############################################
-# MDM PARAMETERS OVERRIDE
+# ADDIGY PARAMETERS OVERRIDE
 #############################################
-# MDM passes: $1 mountPoint, $2 computerName, $3 userName, $4+ custom
+# Addigy passes: $1 mountPoint, $2 computerName, $3 userName, $4+ custom
 if [[ -n "${4-}" ]]; then BZ_GROUP_ID="$4"; fi
 if [[ -n "${5-}" ]]; then BZ_GROUP_TOKEN="$5"; fi
 if [[ -n "${6-}" ]]; then BZ_EMAIL="$6"; fi
@@ -171,7 +171,7 @@ fi
 if [[ -z "$BZ_GROUP_ID" || -z "$BZ_GROUP_TOKEN" ]]; then
   log "ERROR: Missing required values for Business Group enrollment."
   log "  BZ_GROUP_ID='${BZ_GROUP_ID}'"
-  log "Provide via Addigy script variables or parameters $4-$5."
+  log "Provide via Addigy variables or parameters $4-$5."
   exit 1
 fi
 
