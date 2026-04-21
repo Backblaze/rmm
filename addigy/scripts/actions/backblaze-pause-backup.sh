@@ -1,8 +1,8 @@
 #!/bin/bash
 # Backblaze - bzcli action: pause backup (with status check)
 #
-# Jamf Pro notes:
-# - Jamf runs scripts as root.
+# Addigy notes:
+# - Runs as root.
 # - No parameters are required.
 # - Optional: set BZCLI_PATH env var to override bzcli path.
 
