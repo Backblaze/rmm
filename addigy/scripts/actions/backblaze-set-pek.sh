@@ -1,6 +1,6 @@
 #!/bin/bash
-# Backblaze - set PEK (Addigy)
-# Sets a new Private Encryption Key using group auth.
+# backblaze-set-pek.sh
+# Sets a new PEK (requires group auth + root)
 
 set -euo pipefail
 
@@ -14,26 +14,26 @@ GROUP_ID="${4:-${BZ_GROUP_ID:-}}"
 GROUP_TOKEN="${5:-${BZ_GROUP_TOKEN:-}}"
 PEK_NEW="${6:-${BZ_PEK_NEW:-}}"
 
-[[ "$(id -u)" -eq 0 ]] || die "Must run as root."
+[[ "$(id -u)" -eq 0 ]] || die "Must run as root (Jamf runs scripts as root)."
 [[ -x "$BZCLI" ]] || die "bzcli not found/executable at: $BZCLI"
-[[ -n "$GROUP_ID" ]] || die "Missing GROUP_ID (positional arg 4 or BZ_GROUP_ID)"
-[[ -n "$GROUP_TOKEN" ]] || die "Missing GROUP_TOKEN (positional arg 5 or BZ_GROUP_TOKEN)"
-[[ -n "$PEK_NEW" ]] || die "Missing PEK_NEW (positional arg 6 or BZ_PEK_NEW)"
+[[ -n "$GROUP_ID" ]] || die "Missing GROUP_ID (Jamf param 4 or BZ_GROUP_ID)"
+[[ -n "$GROUP_TOKEN" ]] || die "Missing GROUP_TOKEN (Jamf param 5 or BZ_GROUP_TOKEN)"
+[[ -n "$PEK_NEW" ]] || die "Missing PEK_NEW (Jamf param 6 or BZ_PEK_NEW)"
 
 AUTH_ARG="${GROUP_ID}:${GROUP_TOKEN}"
 
-log "Pausing backup before setting PEK..."
+log "Pausing backup (best practice before PEK changes)…"
 "$BZCLI" action --pause-backup >/dev/null 2>&1 || true
 
-log "Setting PEK..."
+log "Setting PEK (requires auth)…"
 "$BZCLI" action --group "$AUTH_ARG" --set-pek "$PEK_NEW" | tee -a "$LOG_FILE"
 
-log "Triggering backup-now after PEK set..."
+log "Triggering backup-now…"
 "$BZCLI" action --backup-now >/dev/null 2>&1 || true
 
-log "Verifying has_pek state..."
+log "Verifying has_pek…"
 HAS_PEK="$("$BZCLI" report -v /backup/installation/has_pek 2>/dev/null | tail -n 1 || true)"
 log "has_pek=${HAS_PEK:-unknown}"
 
-log "Set PEK action completed."
+log "Done."
 exit 0

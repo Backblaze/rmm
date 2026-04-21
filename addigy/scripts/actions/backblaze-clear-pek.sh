@@ -1,6 +1,6 @@
 #!/bin/bash
-# Backblaze - clear PEK (Addigy)
-# Clears an existing Private Encryption Key using group auth.
+# backblaze-clear-pek.sh
+# Clears existing PEK (requires group auth + root)
 
 set -euo pipefail
 
@@ -16,24 +16,24 @@ PEK_OLD="${7:-${BZ_PEK_OLD:-}}"
 
 [[ "$(id -u)" -eq 0 ]] || die "Must run as root."
 [[ -x "$BZCLI" ]] || die "bzcli not found/executable at: $BZCLI"
-[[ -n "$GROUP_ID" ]] || die "Missing GROUP_ID (positional arg 4 or BZ_GROUP_ID)"
-[[ -n "$GROUP_TOKEN" ]] || die "Missing GROUP_TOKEN (positional arg 5 or BZ_GROUP_TOKEN)"
-[[ -n "$PEK_OLD" ]] || die "Missing PEK_OLD (positional arg 7 or BZ_PEK_OLD)"
+[[ -n "$GROUP_ID" ]] || die "Missing GROUP_ID (Jamf param 4 or BZ_GROUP_ID)"
+[[ -n "$GROUP_TOKEN" ]] || die "Missing GROUP_TOKEN (Jamf param 5 or BZ_GROUP_TOKEN)"
+[[ -n "$PEK_OLD" ]] || die "Missing PEK_OLD (Jamf param 7 or BZ_PEK_OLD)"
 
 AUTH_ARG="${GROUP_ID}:${GROUP_TOKEN}"
 
-log "Pausing backup before clearing PEK..."
+log "Pausing backup…"
 "$BZCLI" action --pause-backup >/dev/null 2>&1 || true
 
-log "Clearing PEK..."
+log "Clearing PEK…"
 "$BZCLI" action --group "$AUTH_ARG" --clear-pek "$PEK_OLD" | tee -a "$LOG_FILE"
 
-log "Triggering backup-now after PEK clear..."
+log "Triggering backup-now…"
 "$BZCLI" action --backup-now >/dev/null 2>&1 || true
 
-log "Verifying has_pek state..."
+log "Verifying has_pek…"
 HAS_PEK="$("$BZCLI" report -v /backup/installation/has_pek 2>/dev/null | tail -n 1 || true)"
 log "has_pek=${HAS_PEK:-unknown}"
 
-log "Clear PEK action completed."
+log "Done."
 exit 0
