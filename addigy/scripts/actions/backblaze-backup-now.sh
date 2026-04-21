@@ -1,11 +1,11 @@
 #!/bin/bash
 # Backblaze - bzcli action: backup now (with status check)
 #
-# Jamf Pro notes:
-# - Jamf runs scripts as root.
-# - No parameters are required.
-# - Optional: set BZCLI_PATH env var to override bzcli path.
-# - Runs bzcli as the active console user (required for some UI-bound operations).
+# Addigy notes:
+# - Runs as root.
+# - No script inputs are required.
+# - Optional: set BZCLI_PATH to override the bzcli path.
+# - Runs bzcli as the active console user when available.
 
 set -euo pipefail
 
