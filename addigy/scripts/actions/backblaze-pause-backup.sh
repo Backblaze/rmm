@@ -1,86 +1,46 @@
 #!/bin/bash
-# Backblaze - bzcli action: pause backup (with status check)
+# Backblaze - pause backup (Addigy)
+# Pauses backup and logs normalized status before and after the action.
 #
 # Addigy notes:
-# - Runs as root.
-# - No parameters are required.
-# - Optional: set BZCLI_PATH env var to override bzcli path.
 
 set -euo pipefail
 
-LOG="/var/log/backblaze_bzcli_action.log"
+BZCLI="/Applications/Backblaze.app/Contents/MacOS/bzcli"
+LOG_FILE="${LOG_FILE:-/var/log/backblaze_mdm_actions.log}"
 
 log() {
-  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [pause-backup] $*" | tee -a "$LOG"
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] [bzcli][pause-backup] $*" | tee -a "$LOG_FILE"
 }
-
-find_bzcli() {
-  # Prefer canonical macOS Backblaze path
-  if [[ -x "/Applications/Backblaze.app/Contents/MacOS/bzcli" ]]; then
-    echo "/Applications/Backblaze.app/Contents/MacOS/bzcli"
-    return 0
-  fi
-
-  # Fallback to PATH
-  if command -v bzcli >/dev/null 2>&1; then
-    command -v bzcli
-    return 0
-  fi
-
-  return 1
-}
-
-normalize_status() {
-  # bzcli report output often comes wrapped in quotes; normalize for clean logs
-  local s
-  s="${1:-unknown}"
-  # take first line only, strip CR, trim surrounding quotes and whitespace
-  s="$(printf '%s' "$s" | head -n 1 | tr -d '\r' | sed -E 's/^[[:space:]]*"?//; s/"?[[:space:]]*$//')"
-  if [[ -z "$s" ]]; then
-    echo "unknown"
-  else
-    echo "$s"
-  fi
-}
-
-log "=== START ==="
-
-if [[ ${EUID} -ne 0 ]]; then
-  log "ERROR: must run as root."
+die() {
+  log "ERROR: $*"
   exit 1
-fi
+}
 
-BZCLI="${BZCLI_PATH:-""}"
+[[ "$(id -u)" -eq 0 ]] || die "Must run as root."
+
 if [[ -z "$BZCLI" ]]; then
   if ! BZCLI="$(find_bzcli)"; then
-    log "ERROR: bzcli not found."
-    exit 2
+    die "bzcli not found."
   fi
 fi
 
-if [[ ! -x "$BZCLI" ]]; then
-  log "ERROR: bzcli is not executable at '$BZCLI'."
-  exit 2
-fi
+[[ -x "$BZCLI" ]] || die "bzcli not found/executable at: $BZCLI"
 
-log "Using bzcli: $BZCLI"
+log "Checking status before pause..."
+PRE_STATUS="$($BZCLI report -v /backup/status/summary 2>/dev/null | tail -n 1 || true)"
+log "status_before=${PRE_STATUS:-unknown}"
 
-PRE_STATUS_RAW="$($BZCLI report -v /backup/status/summary 2>/dev/null || echo unknown)"
-PRE_STATUS="$(normalize_status "$PRE_STATUS_RAW")"
-log "Status BEFORE: \"$PRE_STATUS\""
-
-# Execute action
-set +e
-"$BZCLI" action --pause-backup >>"$LOG" 2>&1
+log "Pausing backup..."
+"$BZCLI" action --pause-backup >>"$LOG_FILE" 2>&1
 RC=$?
-set -e
 
-POST_STATUS_RAW="$($BZCLI report -v /backup/status/summary 2>/dev/null || echo unknown)"
-POST_STATUS="$(normalize_status "$POST_STATUS_RAW")"
-log "Status AFTER: \"$POST_STATUS\""
+log "Checking status after pause..."
+POST_STATUS="$($BZCLI report -v /backup/status/summary 2>/dev/null | tail -n 1 || true)"
+log "status_after=${POST_STATUS:-unknown}"
 
 if [[ $RC -eq 0 ]]; then
-  log "SUCCESS: pause-backup command executed."
+  log "Pause backup action completed."
 else
   log "ERROR: pause-backup failed with exit code $RC."
 fi
