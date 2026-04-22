@@ -1,5 +1,6 @@
 #!/bin/bash
-# Jamf Extension Attribute: Backblaze – Last Backup (ISO8601)
+# Addigy Custom Fact: Backblaze - Last Backup (ISO8601)
+# Reports the most recent Backblaze backup timestamp normalized to ISO8601.
 
 find_bzcli() {
   # Canonical macOS Backblaze location
@@ -23,10 +24,41 @@ find_bzcli() {
   return 1
 }
 
+trim() {
+  local s="$1"
+  s="${s#${s%%[![:space:]]*}}"
+  s="${s%${s##*[![:space:]]}}"
+  printf '%s' "$s"
+}
+
+normalize_last_backup() {
+  local raw val
+  raw="$1"
+  val="$(printf '%s' "$raw" | tr -d '\r' | tail -n 1)"
+  val="$(trim "$val")"
+
+  # Remove surrounding double quotes if present.
+  val="${val#\"}"
+  val="${val%\"}"
+
+  if [[ -z "$val" || "$val" == "null" ]]; then
+    printf '%s' "Never"
+    return 0
+  fi
+
+  # Convert `YYYY-MM-DD HH:MM:SS` to ISO8601 `YYYY-MM-DDTHH:MM:SS`.
+  if [[ "$val" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}\ [0-9]{2}:[0-9]{2}:[0-9]{2}$ ]]; then
+    val="${val/ /T}"
+  fi
+
+  printf '%s' "$val"
+}
+
 if ! BZCLI="$(find_bzcli)"; then
   echo "<result>bzcli not found</result>"
   exit 0
 fi
 
-VAL="$($BZCLI report -v /backup/status/last_backup/ISO8601 2>/dev/null | tr -d '\r')"
-echo "<result>${VAL:-Never}</result>"
+RAW_VAL="$($BZCLI report -v /backup/status/last_backup/ISO8601 2>/dev/null || true)"
+VAL="$(normalize_last_backup "$RAW_VAL")"
+echo "<result>${VAL}</result>"

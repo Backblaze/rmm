@@ -4,27 +4,27 @@
 
 Backblaze Desktop v10 supports JSON-based configuration at install time using the advanced installer (`bzinstall_mate`) with the `-cfg` flag.
 
-In the Addigy baseline, this enables IT administrators to pass an enterprise configuration to the installer using either:
+In the Addigy baseline, this enables administrators to pass structured installer configuration using either:
 
-- `BZ_INSTALL_CFG_B64` (base64-encoded JSON)
-- `BZ_INSTALL_CFG_URL` (JSON downloaded from a URL)
+- `BZ_INSTALL_CFG_B64` for base64-encoded JSON
+- `BZ_INSTALL_CFG_URL` for JSON downloaded from a remote URL
 
-This document describes the intended Addigy-aligned JSON bootstrap model. Live validation in the Addigy sandbox is still pending.
+This document describes the current Addigy-aligned JSON bootstrap model.
 
 ---
 
-## Installer vs. bzCLI responsibilities
+## Installer vs. bzcli responsibilities
 
 | Component | Purpose |
 |---|---|
-| Installer (`bzinstall_mate -cfg`) | Apply configuration at deployment/install time |
+| Installer (`bzinstall_mate -cfg`) | Apply deployment configuration at install time |
 | `bzcli configure --json-file` | Apply configuration post-install and support ongoing management |
 
 ---
 
 ## Current Addigy baseline
 
-The current Addigy installer baseline supports JSON input through environment variables rather than Jamf script parameters.
+The current Addigy installer baseline supports JSON input through environment variables rather than platform-specific script parameters.
 
 Preferred input paths:
 
@@ -69,9 +69,10 @@ If JSON is not supplied, the installer falls back to explicit environment-variab
 For the current enterprise deployment path, existing-account sign-in should be treated as the expected automated workflow unless future product changes explicitly expand account-creation behavior.
 
 This means:
+
 - user accounts should already exist on the Backblaze side
-- users should already be added/invited into the relevant organization/group
-- the installer should then proceed using the sign-in/enrollment path
+- users should already be added or invited into the relevant organization or group
+- the installer should then proceed using the sign-in and enrollment path
 
 ---
 
@@ -80,7 +81,7 @@ This means:
 Using advanced installer JSON can help:
 
 - keep installer input structured and reusable
-- avoid quoting/escaping issues in command construction
+- reduce quoting and escaping issues in command construction
 - support centralized deployment patterns more cleanly
 - keep the Addigy baseline aligned with the shared v10 installer model
 
@@ -89,6 +90,7 @@ Using advanced installer JSON can help:
 ## Validation status
 
 At the current stage:
+
 - the JSON bootstrap path is implemented in the Addigy installer baseline
-- Addigy sandbox validation is still pending
-- final production guidance should be updated once live platform behavior is confirmed
+- live validation in Addigy is still pending
+- final production guidance should be updated after sandbox and platform validation are completed
