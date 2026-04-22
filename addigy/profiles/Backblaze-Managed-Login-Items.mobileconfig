@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+
+  <key>PayloadDisplayName</key>
+  <string>Backblaze – Managed Login Items</string>
+
+  <key>PayloadIdentifier</key>
+  <string>com.backblaze.managed-login-items</string>
+
+  <key>PayloadOrganization</key>
+  <string>Backblaze</string>
+
+  <key>PayloadScope</key>
+  <string>System</string>
+
+  <key>PayloadType</key>
+  <string>Configuration</string>
+
+  <key>PayloadUUID</key>
+  <string>F6A0B3E5-7D1A-4C7B-A7C1-LOGINITEMS001</string>
+
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+
+  <key>PayloadContent</key>
+  <array>
+    <dict>
+      <key>PayloadType</key>
+      <string>com.apple.servicemanagement</string>
+
+      <key>PayloadVersion</key>
+      <integer>1</integer>
+
+      <key>PayloadIdentifier</key>
+      <string>com.backblaze.servicemanagement</string>
+
+      <key>PayloadUUID</key>
+      <string>9A8C2B14-1F0D-4F6E-8E11-SERVICEMGMT01</string>
+
+      <key>PayloadEnabled</key>
+      <true/>
+
+      <key>Rules</key>
+      <array>
+
+        <!-- bzbmenu -->
+        <dict>
+          <key>RuleType</key>
+          <string>BundleIdentifier</string>
+          <key>RuleValue</key>
+          <string>com.backblaze.bzbmenu</string>
+          <key>Comment</key>
+          <string>Allow Backblaze bzbmenu background item</string>
+        </dict>
+
+        <!-- Backblaze main app -->
+        <dict>
+          <key>RuleType</key>
+          <string>BundleIdentifier</string>
+          <key>RuleValue</key>
+          <string>com.backblaze.Backblaze</string>
+          <key>Comment</key>
+          <string>Allow Backblaze background services</string>
+        </dict>
+
+      </array>
+    </dict>
+  </array>
+
+</dict>
+</plist>
