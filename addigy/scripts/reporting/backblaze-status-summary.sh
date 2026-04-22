@@ -1,6 +1,6 @@
 #!/bin/bash
-# Jamf Extension Attribute: Backblaze – Status Summary
-# Reports current backup status (e.g. Running, Paused, Error)
+# Backblaze - Status Summary (Addigy)
+# Reports the current backup status summary from bzcli.
 
 find_bzcli() {
   # Canonical macOS Backblaze location
@@ -24,10 +24,20 @@ find_bzcli() {
   return 1
 }
 
+trim_result() {
+  local s="${1:-}"
+  s="$(printf '%s' "$s" | tr -d '\r' | tail -n 1)"
+  s="${s#\"}"
+  s="${s%\"}"
+  printf '%s' "${s:-Unknown}"
+}
+
 if ! BZCLI="$(find_bzcli)"; then
   echo "<result>bzcli not found</result>"
   exit 0
 fi
 
-VAL="$($BZCLI report -v /backup/status/summary 2>/dev/null | tr -d '\r')"
-echo "<result>${VAL:-Unknown}</result>"
+VAL="$($BZCLI report -v /backup/status/summary 2>/dev/null || true)"
+VAL="$(trim_result "$VAL")"
+
+echo "<result>${VAL}</result>"
