@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>PayloadContent</key>
+  <array>
+    <dict>
+      <key>PayloadType</key>
+      <string>com.apple.TCC.configuration-profile-policy</string>
+      <key>PayloadVersion</key>
+      <integer>1</integer>
+      <key>PayloadIdentifier</key>
+      <string>com.backblaze.pppc.backblaze</string>
+      <key>PayloadUUID</key>
+      <string>9A0A3F2B-1111-4444-8888-BACKBLAZE01</string>
+      <key>PayloadDisplayName</key>
+      <string>PPPC Backblaze Full Disk Access</string>
+
+      <key>Services</key>
+      <dict>
+        <key>SystemPolicyAllFiles</key>
+        <array>
+          <dict>
+            <key>Identifier</key>
+            <string>com.backblaze.Backblaze</string>
+            <key>IdentifierType</key>
+            <string>bundleID</string>
+            <key>CodeRequirement</key>
+            <string>anchor apple generic</string>
+            <key>Allowed</key>
+            <true/>
+          </dict>
+        </array>
+      </dict>
+    </dict>
+  </array>
+
+  <key>PayloadType</key>
+  <string>Configuration</string>
+  <key>PayloadVersion</key>
+  <integer>1</integer>
+  <key>PayloadIdentifier</key>
+  <string>com.backblaze.pppc.root</string>
+  <key>PayloadUUID</key>
+  <string>9A0A3F2B-ROOT-4444-8888-BACKBLAZE</string>
+  <key>PayloadDisplayName</key>
+  <string>Backblaze PPPC</string>
+  <key>PayloadScope</key>
+  <string>System</string>
+</dict>
+</plist>
