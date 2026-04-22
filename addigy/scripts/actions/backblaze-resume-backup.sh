@@ -1,8 +1,8 @@
 #!/bin/bash
 # Backblaze - bzcli action: resume backup (with status check)
 #
-# Jamf Pro notes:
-# - Jamf runs scripts as root.
+# Addigy notes:
+# - Runs as root.
 # - No parameters are required.
 # - Optional: set BZCLI_PATH env var to override bzcli path.
 
@@ -105,7 +105,7 @@ run_bzcli action --backup-now >>"$LOG" 2>&1
 RC=$?
 set -e
 
-# Show last lines in Jamf policy output for quick debugging
+# Show last lines in the action log for quick debugging
 # IMPORTANT: Do NOT append the tail back into the same log file (it causes duplicated/recursive log lines).
 log "bzcli action output (tail):"
 /usr/bin/tail -n 25 "$LOG" >&2

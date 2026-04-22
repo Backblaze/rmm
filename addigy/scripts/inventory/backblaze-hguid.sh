@@ -1,5 +1,6 @@
 #!/bin/bash
-# Jamf Extension Attribute: Backblaze – HGUID
+# Addigy Inventory: Backblaze - HGUID
+# Reports the installed Backblaze HGUID using bzcli
 
 find_bzcli() {
   # Canonical macOS Backblaze location
@@ -9,7 +10,7 @@ find_bzcli() {
   fi
 
   # Optional override for testing / non-standard installs
-  if [[ -n "${BZCLI_PATH:-}" && -x "${BZCLI_PATH}" ]]; then
+  if [[ -n "${BZCLI_PATH:-}" && -x "${BZCLI_PATH:-}" ]]; then
     echo "${BZCLI_PATH}"
     return 0
   fi
@@ -28,5 +29,6 @@ if ! BZCLI="$(find_bzcli)"; then
   exit 0
 fi
 
-VAL="$($BZCLI report -v /backup/installation/hguid 2>/dev/null | tr -d '\r')"
-echo "<result>${VAL:-Unknown}</result>"
+VAL="$($BZCLI report -v /backup/installation/hguid 2>/dev/null | tr -d '\r' | tail -n 1)"
+VAL="${VAL:-Unknown}"
+echo "<result>${VAL}</result>"
