@@ -2,22 +2,30 @@
 
 This folder contains Jamf Pro–specific scripts and documentation for integrating **Backblaze Computer Backup** using `bzcli`.
 
-This reference implementation demonstrates enterprise-scale deployment, monitoring, and operational automation using Jamf-native constructs. It can be adapted to fit specific customer environments and policy requirements.
+This reference implementation is intended for enterprise-scale deployment, monitoring, and operational automation using Jamf-native constructs. It can be adapted to fit centralized or decentralized customer environments depending on how Backblaze accounts and device enrollment are managed.
 
-## Deployment Model
+## Deployment Models
 
-This Jamf integration demonstrates a **centralized Backblaze deployment model** commonly used in enterprise and RMM-managed environments.
+This Jamf baseline supports two common deployment patterns:
 
-In this model, a single administrative Backblaze account (or Business Group configuration) manages multiple endpoints through Jamf automation policies and scripts.
+### Centralized deployment
 
-For environments where each device signs in with its own Backblaze account (a decentralized deployment model), refer to the standard Backblaze Jamf documentation on the Backblaze documentation site.
+In the centralized model, a single administrative Backblaze account or Business Group configuration manages multiple endpoints through Jamf automation policies and scripts.
+
+This model is commonly used in enterprise and RMM-managed environments where IT owns deployment scope, monitoring, and operational actions.
+
+### Decentralized deployment
+
+In the decentralized model, each device signs in with its own Backblaze account while Jamf is used for silent installation, configuration delivery, and operational consistency.
+
+This model is useful when device ownership, account ownership, or customer policy requires per-user or per-device sign-in rather than centralized administrative enrollment.
 
 ## Integration Model
 
 This Jamf integration follows a layered automation model:
 
 1. **Deployment Layer**  
-   Silent installation and Business Group enrollment using Jamf policies.
+   Silent installation and optional account or Business Group onboarding using Jamf policies.
 
 2. **Telemetry Layer**  
    Inventory data collection via Jamf Extension Attributes powered by `bzcli`.
@@ -42,7 +50,7 @@ This integration is designed for:
 - Enterprise IT administrators
 - Jamf Pro administrators
 - Managed Service Providers (MSPs)
-- RMM automation engineers
+- RMM and endpoint automation engineers
 
 It provides structured, production-ready building blocks for deploying and managing Backblaze Computer Backup at scale.
 
@@ -72,17 +80,17 @@ jamf/
 - **Extension Attributes** (inventory/reporting in Jamf): `extension-attributes.md`
 - **Smart Computer Groups** (optional examples): `optional-smart-groups.md`
 
+Use these documents as the repository-side reference implementation. Public-facing Backblaze Jamf documentation can then be aligned to the centralized or decentralized deployment flow being documented externally.
+
 ---
 
 ## CLI Reference
 
-A Unix-style command reference for operational automation commands used by
-RMM and MDM platforms is available in the repository:
+A Unix-style command reference for operational automation commands used by RMM and MDM platforms is available in the repository:
 
 `docs/man/backblaze-rmm.md`
 
-This reference documents the operational command model used by the
-Backblaze RMM automation layer and complements the Jamf integration scripts.
+This reference documents the operational command model used by the Backblaze RMM automation layer and complements the Jamf integration scripts.
 
 ---
 
@@ -92,7 +100,7 @@ Backblaze RMM automation layer and complements the Jamf integration scripts.
 
 | Script | Phase | Purpose |
 |--------|-------|---------|
-| install-backblaze.sh | Deployment | Silent installation and Business Group enrollment |
+| install-backblaze.sh | Deployment | Silent installation and configurable onboarding workflow |
 | backup-now.sh | Operations | Trigger immediate backup |
 | pause-backup.sh | Operations | Pause backup activity |
 | resume-backup.sh | Operations | Resume backup activity |
@@ -108,7 +116,7 @@ Backblaze RMM automation layer and complements the Jamf integration scripts.
 
 - `scripts/install/install-backblaze.sh`
 
-Installs (or upgrades) Backblaze Computer Backup and can enroll a device into a Business Group using Jamf script parameters.
+Installs or upgrades Backblaze Computer Backup and supports Jamf-driven deployment workflows that can be adapted for centralized Business Group enrollment or decentralized sign-in patterns.
 
 ### Actions (bzcli)
 
@@ -130,9 +138,10 @@ Installs (or upgrades) Backblaze Computer Backup and can enroll a device into a 
 
 - Smart Computer Groups are optional; core functionality works without them.
 - Validate the integration in a staged or non-production environment before broad rollout.
-- Adjust installer URL/version, scoping, and script parameters to align with organizational security standards.
+- Adjust installer URL, version, onboarding behavior, and script parameters to align with organizational security standards.
 - Extension Attributes are inventory-driven and do not modify device state.
-- Health classification thresholds (if implemented) should align with internal compliance policies.
+- Health classification thresholds, if implemented, should align with internal compliance policies.
+- Centralized and decentralized deployments may require different onboarding inputs, account preparation steps, and policy sequencing.
 
 ---
 
@@ -141,6 +150,6 @@ Installs (or upgrades) Backblaze Computer Backup and can enroll a device into a 
 This Jamf integration is provided as a reference implementation for enterprise automation scenarios.
 
 Backblaze supports the core client functionality and `bzcli` interface.  
-Customization of Jamf policies, Smart Groups, compliance models, and deployment architecture remains the responsibility of the implementing organization.
+Customization of Jamf policies, Smart Groups, compliance models, onboarding logic, and deployment architecture remains the responsibility of the implementing organization.
 
-Organizations are encouraged to adapt logging, validation logic, segmentation strategy, and health classification thresholds to match internal operational and regulatory requirements.
+Organizations are encouraged to adapt logging, validation logic, segmentation strategy, deployment sequencing, and health classification thresholds to match internal operational and regulatory requirements.
