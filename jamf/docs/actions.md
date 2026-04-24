@@ -1,41 +1,43 @@
-# Jamf Pro – Backblaze Integration
+# Jamf Pro Actions – Backblaze (Decentralized)
 
-This document describes how to integrate **Backblaze Computer Backup** with **Jamf Pro** using the reference scripts and configuration provided in this repository.
+This document describes the **Jamf Pro action scripts** that use `bzcli` to control Backblaze Computer Backup on macOS devices in the **decentralized Jamf deployment model**.
 
-This Jamf implementation serves as the reference RMM model for enterprise deployment, telemetry, and operational control.
+In this model, Backblaze is installed through Jamf Pro, but each device signs in with its own Backblaze account rather than being centrally enrolled into a shared administrative configuration.
 
-## Deployment Context
+These scripts are designed to be used in **Jamf Policies** and do not require user interaction.
 
-This Jamf integration follows the **centralized Backblaze deployment model** used in enterprise and RMM-managed environments.
+---
 
-In this model, a single administrative Backblaze account or Business Group configuration manages multiple endpoints through Jamf automation policies and scripts.
+## Deployment context
 
-For decentralized deployments where each device signs in with its own Backblaze account, refer to the official Backblaze Jamf documentation on the Backblaze documentation site.
+This Jamf implementation follows the **decentralized Backblaze deployment model** documented for Jamf Pro on the Backblaze documentation site.
+
+In this model:
+
+- Jamf Pro is responsible for deployment and script execution
+- Backblaze account sign-in happens per device or per end user workflow
+- `bzcli` is used for post-install operational control
+- Optional inventory, extension attributes, and smart groups may still be used for reporting and remediation
+
+This makes the action layer reusable even when enrollment and account association are not centrally managed.
 
 ---
 
 ## What is included
 
-The Jamf integration is modular. You may deploy only what you need.
+The Jamf action layer is modular. You may deploy only what you need.
 
-- **Installer**
-  - Install or upgrade Backblaze
-  - Enroll devices into a Backblaze Business Group
-
-- **Actions (bzcli)**
+- **Actions (`bzcli`)**
   - Trigger backup now
   - Pause backups
   - Resume backups
 
-- **Extension Attributes (optional)**
-  - Backblaze client version
-  - Installation state
+- **Optional telemetry and reporting**
   - Backup status summary
   - Last successful backup timestamp
-  - Backblaze Host GUID (HGUID)
-
-- **Smart Groups (optional)**
-  - Examples for scoping and automation workflows
+  - Installed state
+  - Client version
+  - Host GUID (HGUID)
 
 ---
 
@@ -50,41 +52,26 @@ jamf/
 │   └── optional-smart-groups.md
 └── scripts/
     ├── actions/
-    ├── configuration/
     ├── extension-attributes/
     └── install/
 ```
 
 ---
 
-## Getting Started
+## Getting started
 
-1. Review the installer documentation
-   - `jamf/scripts/install/install-backblaze.sh`
+1. Review the decentralized installer documentation
+   - `jamf/docs/README.md`
+   - `jamf/scripts/install/`
 
 2. Create Jamf policies using the action scripts
    - `jamf/scripts/actions/`
 
-3. (Optional) Add Extension Attributes for reporting
+3. Optionally add Extension Attributes for reporting
    - `jamf/scripts/extension-attributes/`
 
-4. (Optional) Use Smart Groups for staged or phased rollouts
-   - See `optional-smart-groups.md`
-
----
-
-## Notes
-
-- All scripts are intended to be reviewed and adapted to local Jamf standards.
-- Defaults and examples may be adapted to align with organizational security and deployment standards.
-
-# Jamf Actions – Backblaze (bzcli)
-
-These operational actions correspond to the command model documented in the repository CLI reference (`docs/man/backblaze-rmm.md`) and represent common automation primitives used in RMM and MDM workflows.
-
-This document describes the **Jamf Pro action scripts** that use `bzcli` to control Backblaze Computer Backup on macOS devices.
-
-These scripts are designed to be used in **Jamf Policies** and do not require user interaction.
+4. Optionally use Smart Groups for staged remediation or operational visibility
+   - `jamf/docs/optional-smart-groups.md`
 
 ---
 
@@ -93,7 +80,7 @@ These scripts are designed to be used in **Jamf Policies** and do not require us
 ### Backup Now
 
 **Script:**
-```
+```sh
 jamf/scripts/actions/backblaze-backup-now.sh
 ```
 
@@ -103,14 +90,15 @@ Triggers an immediate Backblaze backup if one is not already running.
 **Typical use cases:**
 - Manual remediation by IT
 - Post-install verification
-- User-initiated self service action
+- User-initiated Self Service action
+- Validation after account sign-in
 
 ---
 
 ### Pause Backup
 
 **Script:**
-```
+```sh
 jamf/scripts/actions/backblaze-pause-backup.sh
 ```
 
@@ -120,13 +108,14 @@ Pauses Backblaze backups until they are explicitly resumed.
 **Typical use cases:**
 - Temporary bandwidth control
 - Maintenance windows
+- Troubleshooting or test scenarios
 
 ---
 
 ### Resume Backup
 
 **Script:**
-```
+```sh
 jamf/scripts/actions/backblaze-resume-backup.sh
 ```
 
@@ -136,26 +125,32 @@ Resumes Backblaze backups after being paused.
 **Typical use cases:**
 - End of maintenance window
 - Automated remediation
+- Recovery after user-side interruption
 
 ---
 
 ## Jamf policy configuration notes
 
-- No script parameters are required
-- Scripts must run as **root** (default in Jamf)
-- Scripts log to:
-  - `/var/log/backblaze_bzcli_action.log` (or the log path defined in the script)
+- No script parameters are required for the standard action scripts
+- Scripts should run as **root** in Jamf Pro
+- Some `bzcli` operations may work best when a valid console user session exists
+- Action logs are typically written to:
+  - `/var/log/backblaze_bzcli_action.log`
 
 ---
 
 ## Error handling
 
 - If `bzcli` is not found, the script exits with a non-zero status
-- Exit codes are logged and visible in Jamf policy logs
+- Exit codes are visible in Jamf policy logs
+- Status checks before and after the action help validate expected state transitions
+- Logging should be reviewed during UAT to confirm behavior across device states
 
 ---
 
 ## Notes
 
-- These actions do not modify configuration or enrollment
-- They assume Backblaze is already installed
+- These actions do not perform installation or account creation
+- They assume Backblaze is already installed on the device
+- They are intended to complement the decentralized Jamf installer workflow
+- Organizations may adapt these scripts to match local Jamf policy naming, scoping, and Self Service conventions

@@ -1,39 +1,38 @@
-# Optional Dynamic Groups (Addigy)
+# Optional Smart Groups (Addigy)
 
-This document provides **example dynamic grouping ideas** for **Addigy** using Backblaze inventory and reporting data.
+This document provides **example Addigy Smart Groups** that can be created using the Backblaze inventory and reporting scripts included in this repository.
 
 ⚠️ **Optional Feature**
 
-Dynamic groups are **not required** to install or operate Backblaze. They are provided as **examples only** to demonstrate how inventory and reporting values may be used for visibility, segmentation, and remediation during UAT or production operations.
+Smart Groups are **not required** for installing or operating Backblaze. They are provided as **examples only** to demonstrate how inventory and reporting values may be used for visibility or automation during UAT.
 
 ## Deployment Context
 
-These grouping examples assume the **centralized Backblaze deployment model** used in enterprise and RMM-managed environments.
+These Smart Group examples assume the **Backblaze deployment baseline for Addigy** documented in this repository.
 
-In this architecture, Backblaze endpoints are installed and managed through Addigy automation while telemetry is collected using inventory and reporting scripts. Dynamic groups then provide segmentation for reporting, remediation policies, operational workflows, and targeting.
+In this architecture, Backblaze endpoints are installed and managed through Addigy automation while telemetry is collected using the inventory and reporting scripts included in this repository. Smart Groups then provide segmentation for visibility, remediation workflows, and operational review.
 
-For decentralized deployments where each device signs in with its own Backblaze account, refer to the official Backblaze documentation and the Addigy decentralized installer guidance in this repository.
+For decentralized deployments where each device signs in with its own Backblaze account, refer to the Addigy decentralized deployment documentation included in this repository.
 
 ---
 
 ## Purpose
 
-Optional dynamic groups can help Addigy administrators:
+Optional Smart Groups can help Addigy administrators:
 
 - Visualize Backblaze deployment state
-- Target devices for remediation policies
-- Scope operational actions
-- Segment endpoints by health or backup freshness
+- Target devices for remediation workflows
+- Organize devices for reporting and operational review
 
 They are most useful in **large or highly automated Addigy environments**.
 
 ---
 
-## Example Dynamic Groups
+## Example Smart Groups
 
-The following examples are based on the inventory and reporting scripts documented in `inventory-and-reporting.md`.
+The following Smart Groups are examples that can be created using the inventory and reporting scripts documented in `inventory-and-reporting.md`.
 
-These groups represent the **segmentation layer** of the Addigy integration architecture and complement the operational action model documented in `actions.md`.
+These Smart Groups represent the **segmentation layer** of the Addigy baseline and complement the operational action model documented in `actions.md`.
 
 ### Backblaze Installed
 
@@ -42,7 +41,7 @@ These groups represent the **segmentation layer** of the Addigy integration arch
 
 **Use cases:**
 - Confirm deployment coverage
-- Scope actions or reporting
+- Scope reporting or follow-up actions
 
 ---
 
@@ -53,50 +52,48 @@ These groups represent the **segmentation layer** of the Addigy integration arch
 
 **Use cases:**
 - Identify devices with paused backups
-- Target resume-backup actions
+- Target devices for manual review or resume actions
 
 ---
 
-### Backblaze Backup Not Healthy
+### Backblaze Backup Not Running
 
 **Criteria:**
-- Reporting value `Backblaze – Health Score` **is** `RED`
-- or Reporting value `Backblaze – Health Score` **is** `YELLOW`
+- Reporting value `Backblaze – Status Summary` **does not contain** `Running`
 
 **Use cases:**
-- Detect backup issues
-- Target remediation workflows
-- Prioritize operational review
+- Detect potential backup issues
+- Target devices for remediation workflows
 
 ---
 
-## Health-Based Dynamic Groups (Recommended)
+## Health-Based Smart Groups (Recommended)
 
-If the optional **Backblaze – Health Score** reporting script is implemented, dynamic grouping can be simplified and standardized using deterministic health states.
+If the optional **Health Score** reporting script is implemented, Smart Groups can be simplified and standardized using deterministic health states.
 
-### Backblaze – GREEN
+### Backblaze – Healthy
 
 **Criteria:**
 - Reporting value `Backblaze – Health Score` **is** `GREEN`
 
 **Use cases:**
 - Compliance confirmation
-- Healthy device reporting
+- Executive reporting dashboards
 
 ---
 
-### Backblaze – YELLOW
+### Backblaze – Warning
 
 **Criteria:**
 - Reporting value `Backblaze – Health Score` **is** `YELLOW`
 
 **Use cases:**
 - Early remediation workflows
-- Targeted follow-up policies
+- Targeted operational follow-up
 
 ---
 
-### Backblaze – RED
+### Backblaze – Critical
 
 **Criteria:**
 - Reporting value `Backblaze – Health Score` **is** `RED`
@@ -108,41 +105,39 @@ If the optional **Backblaze – Health Score** reporting script is implemented, 
 
 ---
 
-### Backblaze – NOT_INSTALLED
+### Backblaze – Not Installed
 
 **Criteria:**
-- Reporting value `Backblaze – Health Score` **is** `NOT_INSTALLED`
-- or Inventory value `Backblaze – Installed` **is** `Not Installed`
+- Inventory value `Backblaze – Installed` **is not** `Installed`
 
 **Use cases:**
 - Deployment gap detection
-- Installation policy scoping
+- Installation workflow targeting
 
 ---
 
-Using health-based segmentation reduces group complexity and enables a more consistent automation model across large Addigy environments.
+Using health-based segmentation reduces Smart Group complexity and enables a more consistent automation model across large Addigy environments.
 
 ---
 
-## When to use Dynamic Groups
+## When to use Smart Groups
 
 Recommended for environments such as:
 - Large Addigy deployments
 - Automated remediation workflows
-- Operational reporting
-- Fleet segmentation by backup state
+- Operational reporting and device segmentation
 
 Not required for:
 - Small environments
-- Manual policy execution
+- Manual script execution
 - Initial UAT validation
 
 ---
 
 ## Notes
 
-- Dynamic groups depend on inventory and reporting data being present and current
-- Grouping logic should align with the reporting cadence configured in Addigy
-- Administrators may customize criteria to match internal standards
-- Health-based groups provide a cleaner segmentation model than raw status-string parsing
-- These examples are intended to support visibility and automation, not to prescribe a single Addigy design
+- Smart Groups depend on inventory and reporting values being present and up to date
+- Administrators may customize criteria to match internal operational standards
+- Health-based Smart Groups provide a cleaner segmentation model than raw status-string parsing
+- Smart Groups should remain declarative and inventory-driven
+- These examples are optional and intended as a starting point for UAT and production design
