@@ -1,5 +1,5 @@
 #!/bin/bash
-# Backblaze - bzcli action: resume backup (with status check)
+# Backblaze - bzcli action: backup Now (with status check)
 #
 # Addigy notes:
 # - Runs as root.
